@@ -27,11 +27,13 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    tabla.cpp
+    tabla.cpp \
+    score.cpp
 
 HEADERS += \
         mainwindow.h \
-    tabla.h
+    tabla.h \
+    score.h
 
 FORMS += \
         mainwindow.ui
@@ -42,3 +44,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RC_ICONS = myappico.ico
+
+RESOURCES +=

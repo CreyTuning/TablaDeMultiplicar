@@ -1,9 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "tabla.h"
+#include "score.h"
+#include "qstring.h"
 
 static Tabla * tabla = new Tabla();
 static bool isUiEnable = false;
+static Score * score = new Score();
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -11,6 +14,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     this->disableUI();
+
+    score->update();
+    ui->score->display(score->getScore());
+    ui->completed->display(score->getCompleted());
 }
 
 MainWindow::~MainWindow()
@@ -53,6 +60,7 @@ void MainWindow::keyPressEvent(QKeyEvent * e)
 void MainWindow::enableUI()
 {
     ui->responder_pushButton->setEnabled(true);
+    ui->ayuda_pushButton->setEnabled(true);
     ui->respuesta_SpinBox->setEnabled(true);
     ui->estado_label->setText("responde");
     isUiEnable = true;
@@ -63,6 +71,7 @@ void MainWindow::disableUI()
     ui->responder_pushButton->setEnabled(false);
     ui->respuesta_SpinBox->setEnabled(false);
     ui->estado_label->setText("seleccione una tabla");
+    ui->ayuda_pushButton->setEnabled(false);
     isUiEnable = false;
 }
 
@@ -72,6 +81,7 @@ void MainWindow::on_tabla_2_clicked()
     tabla->setTabla(2);
     tabla->initValores();
     tabla->setCurrentValue();
+    ui->progressBar->setValue(0);
     ui->estado_label->setText("TABLA DEL 2");
     ui->valorLeft_lcdNumber->display(QString::number(tabla->getTabla()));
     ui->valorRight_lcdNumber->display(QString::number(tabla->getCurrentValue()));
@@ -83,6 +93,7 @@ void MainWindow::on_tabla_3_clicked()
     tabla->setTabla(3);
     tabla->initValores();
     tabla->setCurrentValue();
+    ui->progressBar->setValue(0);
     ui->estado_label->setText("TABLA DEL 3");
     ui->valorLeft_lcdNumber->display(QString::number(tabla->getTabla()));
     ui->valorRight_lcdNumber->display(QString::number(tabla->getCurrentValue()));
@@ -94,6 +105,7 @@ void MainWindow::on_tabla_4_clicked()
     tabla->setTabla(4);
     tabla->initValores();
     tabla->setCurrentValue();
+    ui->progressBar->setValue(0);
     ui->estado_label->setText("TABLA DEL 4");
     ui->valorLeft_lcdNumber->display(QString::number(tabla->getTabla()));
     ui->valorRight_lcdNumber->display(QString::number(tabla->getCurrentValue()));
@@ -105,6 +117,7 @@ void MainWindow::on_tabla_5_clicked()
     tabla->setTabla(5);
     tabla->initValores();
     tabla->setCurrentValue();
+    ui->progressBar->setValue(0);
     ui->estado_label->setText("TABLA DEL 5");
     ui->valorLeft_lcdNumber->display(QString::number(tabla->getTabla()));
     ui->valorRight_lcdNumber->display(QString::number(tabla->getCurrentValue()));
@@ -116,6 +129,7 @@ void MainWindow::on_tabla_6_clicked()
     tabla->setTabla(6);
     tabla->initValores();
     tabla->setCurrentValue();
+    ui->progressBar->setValue(0);
     ui->estado_label->setText("TABLA DEL 6");
     ui->valorLeft_lcdNumber->display(QString::number(tabla->getTabla()));
     ui->valorRight_lcdNumber->display(QString::number(tabla->getCurrentValue()));
@@ -127,6 +141,7 @@ void MainWindow::on_tabla_7_clicked()
     tabla->setTabla(7);
     tabla->initValores();
     tabla->setCurrentValue();
+    ui->progressBar->setValue(0);
     ui->estado_label->setText("TABLA DEL 7");
     ui->valorLeft_lcdNumber->display(QString::number(tabla->getTabla()));
     ui->valorRight_lcdNumber->display(QString::number(tabla->getCurrentValue()));
@@ -138,6 +153,7 @@ void MainWindow::on_tabla_8_clicked()
     tabla->setTabla(8);
     tabla->initValores();
     tabla->setCurrentValue();
+    ui->progressBar->setValue(0);
     ui->estado_label->setText("TABLA DEL 8");
     ui->valorLeft_lcdNumber->display(QString::number(tabla->getTabla()));
     ui->valorRight_lcdNumber->display(QString::number(tabla->getCurrentValue()));
@@ -149,6 +165,7 @@ void MainWindow::on_tabla_9_clicked()
     tabla->setTabla(9);
     tabla->initValores();
     tabla->setCurrentValue();
+    ui->progressBar->setValue(0);
     ui->estado_label->setText("TABLA DEL 9");
     ui->valorLeft_lcdNumber->display(QString::number(tabla->getTabla()));
     ui->valorRight_lcdNumber->display(QString::number(tabla->getCurrentValue()));
@@ -164,21 +181,44 @@ void MainWindow::on_responder_pushButton_clicked()
         tabla->setCurrentValue();
         ui->valorLeft_lcdNumber->display(QString::number(tabla->getTabla()));
         ui->valorRight_lcdNumber->display(QString::number(tabla->getCurrentValue()));
+        ui->progressBar->setValue(ui->progressBar->value() + 10);
+        score->setScore(score->getScore() + 10);
+        score->save();
+        ui->score->display(score->getScore());
+
 
         //FIN de la tabla
         if(tabla->isValoresClear())
         {
             disableUI();
-            ui->estado_label->setText("HAS TERMINADO LA TABLA, EXCELENTE :D");
+            ui->estado_label->setText("COMPLETADO, EXCELENTE!");
             ui->valorLeft_lcdNumber->display("0");
             ui->valorRight_lcdNumber->display("0");
+            score->setCompleted(score->getCompleted() + 1);
+            score->save();
+            ui->completed->display(score->getCompleted());
         }
     }
     else //Respuesta erronea
     {
-        ui->estado_label->setText("ERROR... vuelve a intentarlo");
+        ui->estado_label->setText("Auch! algo anda mal, vuelve a intentarlo");
     }
 
     ui->respuesta_SpinBox->clear();
     ui->respuesta_SpinBox->focusWidget();
+}
+
+void MainWindow::on_ayuda_pushButton_clicked()
+{
+    if(score->getScore() >= 100)
+    {
+        ui->estado_label->setText(QString::number(tabla->getCurrentValue() * tabla->getTabla()));
+        score->setScore(score->getScore() - 100);
+        score->save();
+        ui->score->display(score->getScore());
+    }
+
+    else
+         ui->estado_label->setText("Necesitas tener 100 puntos!");
+
 }

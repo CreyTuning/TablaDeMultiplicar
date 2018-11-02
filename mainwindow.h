@@ -38,6 +38,8 @@ private slots:
 
     void on_responder_pushButton_clicked();
 
+    void on_ayuda_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     void enableUI();
