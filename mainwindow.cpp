@@ -265,6 +265,7 @@ void MainWindow::on_ayuda_pushButton_clicked()
          ui->estado_label->setText("Necesitas tener 100 puntos!");
 
     updateStatus_botonAyuda();
+    titleScoreUpdate();
 }
 
 void MainWindow::updateStatus_botonAyuda()
@@ -361,4 +362,7 @@ void MainWindow::titleScoreUpdate()
 
     else if(score->getScore() > 100)
         ui->title->setText("Eres Nivel 1");
+
+    else if(score->getScore() <= 100)
+        ui->title->setText("Tabla de Multiplicar");
 }
