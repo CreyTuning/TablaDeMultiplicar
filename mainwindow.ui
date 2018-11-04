@@ -29,9 +29,188 @@
    <iconset>
     <normaloff>../tab.ico</normaloff>../tab.ico</iconset>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: #ffffff;</string>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_3">
-    <item row="2" column="0" colspan="2">
+    <item row="0" column="0" colspan="3">
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="3">
+       <widget class="QLabel" name="label_2">
+        <property name="font">
+         <font>
+          <family>Comic Sans MS</family>
+         </font>
+        </property>
+        <property name="text">
+         <string>Puntos</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" rowspan="2">
+       <spacer name="horizontalSpacer_6">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="4">
+       <widget class="QLabel" name="label_4">
+        <property name="font">
+         <font>
+          <family>Comic Sans MS</family>
+         </font>
+        </property>
+        <property name="text">
+         <string>Completados</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QLCDNumber" name="score">
+        <property name="font">
+         <font>
+          <family>Comic Sans MS</family>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLCDNumber{
+	background: #f1f3f4;
+	border-radius: 5px;
+	padding: 20px;
+	color: #202124;
+	outline: none
+}
+
+QLCDNumber:disabled {
+	background-color: #ebebeb;
+	color: #a3a3a3;
+}
+</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Box</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Sunken</enum>
+        </property>
+        <property name="segmentStyle">
+         <enum>QLCDNumber::Flat</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" rowspan="2">
+       <widget class="QLabel" name="title">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Comic Sans MS</family>
+          <pointsize>20</pointsize>
+          <weight>50</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: #202124;</string>
+        </property>
+        <property name="text">
+         <string>Tabla de multiplicar</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::RichText</enum>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="5" rowspan="2">
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="2" rowspan="2">
+       <spacer name="horizontalSpacer_7">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="1" column="4">
+       <widget class="QLCDNumber" name="completed">
+        <property name="font">
+         <font>
+          <family>Comic Sans MS</family>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLCDNumber{
+	background: #f1f3f4;
+	border-radius: 5px;
+	padding: 20px;
+	color: #202124;
+	outline: none
+}
+
+QLCDNumber:disabled {
+	background-color: #ebebeb;
+	color: #a3a3a3;
+}
+</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Box</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Sunken</enum>
+        </property>
+        <property name="segmentStyle">
+         <enum>QLCDNumber::Flat</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="2" column="0" colspan="3">
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="3" column="2">
        <widget class="QPushButton" name="tabla_9">
@@ -49,9 +228,46 @@
         </property>
         <property name="font">
          <font>
-          <family>MS PGothic</family>
+          <family>Comic Sans MS</family>
           <pointsize>16</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
          </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    color: #808699;
+    background-color: #f1f3f4;
+    padding: 5px;
+    border-radius: 10px;
+    outline: none;
+}
+
+QPushButton:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 2px;
+    color: #454545;
+}
+
+QPushButton:focus {
+    background-color: #f1f3f4;
+	color: #808699;
+}
+
+QPushButton:pressed {
+	color: #FFFFFF;
+    background-color: #9500df;
+    padding-top: -15px;
+    padding-bottom: -17px;
+}
+</string>
         </property>
         <property name="text">
          <string>9</string>
@@ -77,9 +293,46 @@
         </property>
         <property name="font">
          <font>
-          <family>MS PGothic</family>
+          <family>Comic Sans MS</family>
           <pointsize>16</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
          </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    color: #808699;
+    background-color: #f1f3f4;
+    padding: 5px;
+    border-radius: 10px;
+    outline: none;
+}
+
+QPushButton:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 2px;
+    color: #454545;
+}
+
+QPushButton:focus {
+    background-color: #f1f3f4;
+	color: #808699;
+}
+
+QPushButton:pressed {
+	color: #FFFFFF;
+    background-color: #9500df;
+    padding-top: -15px;
+    padding-bottom: -17px;
+}
+</string>
         </property>
         <property name="text">
          <string>2</string>
@@ -105,9 +358,46 @@
         </property>
         <property name="font">
          <font>
-          <family>MS PGothic</family>
+          <family>Comic Sans MS</family>
           <pointsize>16</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
          </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    color: #808699;
+    background-color: #f1f3f4;
+    padding: 5px;
+    border-radius: 10px;
+    outline: none;
+}
+
+QPushButton:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 2px;
+    color: #454545;
+}
+
+QPushButton:focus {
+    background-color: #f1f3f4;
+	color: #808699;
+}
+
+QPushButton:pressed {
+	color: #FFFFFF;
+    background-color: #9500df;
+    padding-top: -15px;
+    padding-bottom: -17px;
+}
+</string>
         </property>
         <property name="text">
          <string>5</string>
@@ -133,9 +423,46 @@
         </property>
         <property name="font">
          <font>
-          <family>MS PGothic</family>
+          <family>Comic Sans MS</family>
           <pointsize>16</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
          </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    color: #808699;
+    background-color: #f1f3f4;
+    padding: 5px;
+    border-radius: 10px;
+    outline: none;
+}
+
+QPushButton:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 2px;
+    color: #454545;
+}
+
+QPushButton:focus {
+    background-color: #f1f3f4;
+	color: #808699;
+}
+
+QPushButton:pressed {
+	color: #FFFFFF;
+    background-color: #9500df;
+    padding-top: -15px;
+    padding-bottom: -17px;
+}
+</string>
         </property>
         <property name="text">
          <string>7</string>
@@ -161,9 +488,46 @@
         </property>
         <property name="font">
          <font>
-          <family>MS PGothic</family>
+          <family>Comic Sans MS</family>
           <pointsize>16</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
          </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    color: #808699;
+    background-color: #f1f3f4;
+    padding: 5px;
+    border-radius: 10px;
+    outline: none;
+}
+
+QPushButton:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 2px;
+    color: #454545;
+}
+
+QPushButton:focus {
+    background-color: #f1f3f4;
+	color: #808699;
+}
+
+QPushButton:pressed {
+	color: #FFFFFF;
+    background-color: #9500df;
+    padding-top: -15px;
+    padding-bottom: -17px;
+}
+</string>
         </property>
         <property name="text">
          <string>3</string>
@@ -189,9 +553,46 @@
         </property>
         <property name="font">
          <font>
-          <family>MS PGothic</family>
+          <family>Comic Sans MS</family>
           <pointsize>16</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
          </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    color: #808699;
+    background-color: #f1f3f4;
+    padding: 5px;
+    border-radius: 10px;
+    outline: none;
+}
+
+QPushButton:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 2px;
+    color: #454545;
+}
+
+QPushButton:focus {
+    background-color: #f1f3f4;
+	color: #808699;
+}
+
+QPushButton:pressed {
+	color: #FFFFFF;
+    background-color: #9500df;
+    padding-top: -15px;
+    padding-bottom: -17px;
+}
+</string>
         </property>
         <property name="text">
          <string>6</string>
@@ -217,9 +618,46 @@
         </property>
         <property name="font">
          <font>
-          <family>MS PGothic</family>
+          <family>Comic Sans MS</family>
           <pointsize>16</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
          </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    color: #808699;
+    background-color: #f1f3f4;
+    padding: 5px;
+    border-radius: 10px;
+    outline: none;
+}
+
+QPushButton:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 2px;
+    color: #454545;
+}
+
+QPushButton:focus {
+    background-color: #f1f3f4;
+	color: #808699;
+}
+
+QPushButton:pressed {
+	color: #FFFFFF;
+    background-color: #9500df;
+    padding-top: -15px;
+    padding-bottom: -17px;
+}
+</string>
         </property>
         <property name="text">
          <string>4</string>
@@ -245,9 +683,46 @@
         </property>
         <property name="font">
          <font>
-          <family>MS PGothic</family>
+          <family>Comic Sans MS</family>
           <pointsize>16</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
          </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    color: #808699;
+    background-color: #f1f3f4;
+    padding: 5px;
+    border-radius: 10px;
+    outline: none;
+}
+
+QPushButton:disabled {
+    background-color: #31363b;
+    border-width: 1px;
+    border-color: #454545;
+    border-style: solid;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 2px;
+    color: #454545;
+}
+
+QPushButton:focus {
+    background-color: #f1f3f4;
+	color: #808699;
+}
+
+QPushButton:pressed {
+	color: #FFFFFF;
+    background-color: #9500df;
+    padding-top: -15px;
+    padding-bottom: -17px;
+}
+</string>
         </property>
         <property name="text">
          <string>8</string>
@@ -285,21 +760,228 @@
       </item>
      </layout>
     </item>
-    <item row="4" column="0" colspan="2">
+    <item row="4" column="0" colspan="3">
      <layout class="QGridLayout" name="gridLayout">
-      <item row="4" column="3">
-       <widget class="QPushButton" name="ayuda_pushButton">
-        <property name="minimumSize">
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLineEdit" name="respuesta_SpinBox">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>50</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>20</pointsize>
+           </font>
+          </property>
+          <property name="cursor">
+           <cursorShape>ArrowCursor</cursorShape>
+          </property>
+          <property name="mouseTracking">
+           <bool>false</bool>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="contextMenuPolicy">
+           <enum>Qt::NoContextMenu</enum>
+          </property>
+          <property name="acceptDrops">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QLineEdit{
+	background: #f1f3f4;
+	border-radius: 20px;
+	padding-left: 20px;
+	padding-right: 20px;
+	color: #202124;
+	outline: none
+}
+
+QLineEdit:disabled {
+	background-color: #ebebeb;
+	color: #a3a3a3;
+}
+</string>
+          </property>
+          <property name="frame">
+           <bool>true</bool>
+          </property>
+          <property name="readOnly">
+           <bool>false</bool>
+          </property>
+          <property name="clearButtonEnabled">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="ayuda_pushButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Comic Sans MS</family>
+            <pointsize>12</pointsize>
+           </font>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton {
+	padding: 5px;
+}
+
+QPushButton:hover {
+	background: #FFFFFF;
+	border: 1px solid #c6c5c5;
+	border-radius: 5px;
+}
+
+QPushButton:pressed {
+	background: #e1e1e1;
+}
+
+QPushButton:disabled {
+	background-color: #ebebeb;
+	color: #a3a3a3;
+}
+</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="resource.qrc">
+            <normaloff>:/Resources/question.png</normaloff>:/Resources/question.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="responder_pushButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Comic Sans MS</family>
+           </font>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton {
+	padding: 5px;
+}
+
+QPushButton:hover {
+	background: #FFFFFF;
+	border: 1px solid #c6c5c5;
+	border-radius: 5px;
+}
+
+QPushButton:pressed {
+	background: #e1e1e1;
+}
+
+QPushButton:disabled {
+	background-color: #ebebeb;
+	color: #a3a3a3;
+}
+</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="resource.qrc">
+            <normaloff>:/Resources/Resources/accept_icon.png</normaloff>:/Resources/Resources/accept_icon.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+          <property name="autoDefault">
+           <bool>false</bool>
+          </property>
+          <property name="default">
+           <bool>false</bool>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="2">
+       <spacer name="horizontalSpacer_5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
          <size>
-          <width>50</width>
-          <height>50</height>
+          <width>40</width>
+          <height>20</height>
          </size>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>50</width>
-          <height>50</height>
-         </size>
+       </spacer>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="estado_label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
         <property name="font">
          <font>
@@ -307,13 +989,165 @@
           <pointsize>12</pointsize>
          </font>
         </property>
+        <property name="styleSheet">
+         <string notr="true">color: #202124;</string>
+        </property>
         <property name="text">
-         <string>?</string>
+         <string>selecciona una tabla...</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
-      <item row="6" column="1" colspan="4">
+      <item row="1" column="0">
+       <spacer name="horizontalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLCDNumber" name="valorLeft_lcdNumber">
+          <property name="minimumSize">
+           <size>
+            <width>146</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QLCDNumber{
+	background: #f1f3f4;
+	border-radius: 5px;
+	padding: 20px;
+	color: #202124;
+	outline: none
+}
+
+QLCDNumber:disabled {
+	background-color: #ebebeb;
+	color: #a3a3a3;
+}
+</string>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Plain</enum>
+          </property>
+          <property name="lineWidth">
+           <number>1</number>
+          </property>
+          <property name="midLineWidth">
+           <number>0</number>
+          </property>
+          <property name="smallDecimalPoint">
+           <bool>false</bool>
+          </property>
+          <property name="mode">
+           <enum>QLCDNumber::Dec</enum>
+          </property>
+          <property name="segmentStyle">
+           <enum>QLCDNumber::Flat</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="font">
+           <font>
+            <pointsize>28</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: #202124;</string>
+          </property>
+          <property name="text">
+           <string>x</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLCDNumber" name="valorRight_lcdNumber">
+          <property name="minimumSize">
+           <size>
+            <width>146</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QLCDNumber{
+	background: #f1f3f4;
+	border-radius: 5px;
+	padding: 20px;
+	color: #202124;
+	outline: none
+}
+
+QLCDNumber:disabled {
+	background-color: #ebebeb;
+	color: #a3a3a3;
+}
+</string>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Plain</enum>
+          </property>
+          <property name="lineWidth">
+           <number>1</number>
+          </property>
+          <property name="midLineWidth">
+           <number>0</number>
+          </property>
+          <property name="smallDecimalPoint">
+           <bool>false</bool>
+          </property>
+          <property name="mode">
+           <enum>QLCDNumber::Dec</enum>
+          </property>
+          <property name="segmentStyle">
+           <enum>QLCDNumber::Flat</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="1">
        <widget class="QProgressBar" name="progressBar">
+        <property name="styleSheet">
+         <string notr="true">QProgressBar {
+	border-radius: 10px;
+	outline: none;
+	background-color: #f1f3f4;
+}
+
+QProgressBar::chunk {
+	border-radius: 10px;
+    background-color: #AA00FF;
+}
+
+
+QProgressBar:disabled {
+	background-color: #ebebeb;
+    color: #ebebeb;
+}
+</string>
+        </property>
         <property name="maximum">
          <number>100</number>
         </property>
@@ -331,207 +1165,38 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QLCDNumber" name="valorLeft_lcdNumber">
-        <property name="minimumSize">
-         <size>
-          <width>146</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::Box</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
-        </property>
-        <property name="lineWidth">
-         <number>1</number>
-        </property>
-        <property name="midLineWidth">
-         <number>0</number>
-        </property>
-        <property name="smallDecimalPoint">
-         <bool>false</bool>
-        </property>
-        <property name="mode">
-         <enum>QLCDNumber::Dec</enum>
-        </property>
-        <property name="segmentStyle">
-         <enum>QLCDNumber::Flat</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2" colspan="2">
-       <widget class="QLabel" name="label_3">
-        <property name="font">
-         <font>
-          <pointsize>28</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>x</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4">
-       <widget class="QLCDNumber" name="valorRight_lcdNumber">
-        <property name="minimumSize">
-         <size>
-          <width>146</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::Box</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
-        </property>
-        <property name="lineWidth">
-         <number>1</number>
-        </property>
-        <property name="midLineWidth">
-         <number>0</number>
-        </property>
-        <property name="smallDecimalPoint">
-         <bool>false</bool>
-        </property>
-        <property name="mode">
-         <enum>QLCDNumber::Dec</enum>
-        </property>
-        <property name="segmentStyle">
-         <enum>QLCDNumber::Flat</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1" colspan="2">
-       <widget class="QLineEdit" name="respuesta_SpinBox">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>20</pointsize>
-         </font>
-        </property>
-        <property name="cursor">
-         <cursorShape>ArrowCursor</cursorShape>
-        </property>
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="focusPolicy">
-         <enum>Qt::NoFocus</enum>
-        </property>
-        <property name="contextMenuPolicy">
-         <enum>Qt::NoContextMenu</enum>
-        </property>
-        <property name="acceptDrops">
-         <bool>false</bool>
-        </property>
-        <property name="frame">
-         <bool>true</bool>
-        </property>
-        <property name="readOnly">
-         <bool>false</bool>
-        </property>
-        <property name="clearButtonEnabled">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="6" rowspan="7">
-       <spacer name="horizontalSpacer_5">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="0" rowspan="7">
-       <spacer name="horizontalSpacer_4">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="2" column="1" colspan="4">
-       <widget class="QLabel" name="estado_label">
-        <property name="font">
-         <font>
-          <family>Comic Sans MS</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>selecciona una tabla...</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1" colspan="4">
+      <item row="3" column="1">
        <spacer name="verticalSpacer_3">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
-        </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>20</width>
-          <height>10</height>
+          <height>5</height>
          </size>
         </property>
        </spacer>
       </item>
-      <item row="4" column="4">
-       <widget class="QPushButton" name="responder_pushButton">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Comic Sans MS</family>
-         </font>
-        </property>
-        <property name="text">
-         <string>Responder</string>
-        </property>
-        <property name="autoDefault">
-         <bool>false</bool>
-        </property>
-        <property name="default">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
      </layout>
     </item>
-    <item row="3" column="0" colspan="2">
+    <item row="1" column="0" colspan="3">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Expanding</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>10</width>
+        <height>10</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="3" column="0" colspan="3">
      <spacer name="verticalSpacer_2">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -547,158 +1212,25 @@
       </property>
      </spacer>
     </item>
-    <item row="1" column="0" colspan="2">
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Expanding</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="3">
-       <widget class="QLabel" name="label_2">
-        <property name="font">
-         <font>
-          <family>Comic Sans MS</family>
-         </font>
-        </property>
-        <property name="text">
-         <string>Puntos</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" rowspan="2">
-       <spacer name="horizontalSpacer_6">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="4">
-       <widget class="QLabel" name="label_4">
-        <property name="font">
-         <font>
-          <family>Comic Sans MS</family>
-         </font>
-        </property>
-        <property name="text">
-         <string>Completados</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QLCDNumber" name="score">
-        <property name="font">
-         <font>
-          <family>Comic Sans MS</family>
-         </font>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::Box</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
-        </property>
-        <property name="segmentStyle">
-         <enum>QLCDNumber::Flat</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1" rowspan="2">
-       <widget class="QLabel" name="label">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Comic Sans MS</family>
-          <pointsize>20</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Tabla de multiplicar</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::RichText</enum>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="5" rowspan="2">
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="2" rowspan="2">
-       <spacer name="horizontalSpacer_7">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Maximum</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="1" column="4">
-       <widget class="QLCDNumber" name="completed">
-        <property name="font">
-         <font>
-          <family>Comic Sans MS</family>
-         </font>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::Box</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
-        </property>
-        <property name="segmentStyle">
-         <enum>QLCDNumber::Flat</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <tabstops>
+  <tabstop>tabla_2</tabstop>
+  <tabstop>tabla_3</tabstop>
+  <tabstop>tabla_4</tabstop>
+  <tabstop>tabla_5</tabstop>
+  <tabstop>tabla_6</tabstop>
+  <tabstop>tabla_7</tabstop>
+  <tabstop>tabla_8</tabstop>
+  <tabstop>tabla_9</tabstop>
+  <tabstop>ayuda_pushButton</tabstop>
+  <tabstop>responder_pushButton</tabstop>
+ </tabstops>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

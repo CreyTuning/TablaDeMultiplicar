@@ -40,6 +40,10 @@ private slots:
 
     void on_ayuda_pushButton_clicked();
 
+    void updateStatus_botonAyuda();
+
+    void titleScoreUpdate();
+
 private:
     Ui::MainWindow *ui;
     void enableUI();

@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/Resources">
+        <file>Resources/accept_icon.png</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>Resources/question.png</file>
+    </qresource>
+</RCC>

@@ -18,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
     score->update();
     ui->score->display(score->getScore());
     ui->completed->display(score->getCompleted());
+
+    titleScoreUpdate();
 }
 
 MainWindow::~MainWindow()
@@ -59,11 +61,12 @@ void MainWindow::keyPressEvent(QKeyEvent * e)
 
 void MainWindow::enableUI()
 {
+    isUiEnable = true;
     ui->responder_pushButton->setEnabled(true);
-    ui->ayuda_pushButton->setEnabled(true);
+    updateStatus_botonAyuda();
     ui->respuesta_SpinBox->setEnabled(true);
     ui->estado_label->setText("responde");
-    isUiEnable = true;
+    ui->progressBar->setEnabled(true);
 }
 
 void MainWindow::disableUI()
@@ -72,6 +75,7 @@ void MainWindow::disableUI()
     ui->respuesta_SpinBox->setEnabled(false);
     ui->estado_label->setText("seleccione una tabla");
     ui->ayuda_pushButton->setEnabled(false);
+    ui->progressBar->setEnabled(false);
     isUiEnable = false;
 }
 
@@ -173,6 +177,13 @@ void MainWindow::on_tabla_9_clicked()
 
 void MainWindow::on_responder_pushButton_clicked()
 {
+
+    if(ui->respuesta_SpinBox->text() == "")
+    {
+        ui->estado_label->setText("Debes responder primero!");
+        return;
+    }
+
     if(ui->respuesta_SpinBox->text().toInt() == (tabla->getCurrentValue() * tabla->getTabla()))
     {
         // Respuesta correcta
@@ -185,6 +196,9 @@ void MainWindow::on_responder_pushButton_clicked()
         score->setScore(score->getScore() + 10);
         score->save();
         ui->score->display(score->getScore());
+        ui->progressBar->setStyleSheet("QProgressBar {border-radius: 10px;outline: none;background-color: #f1f3f4;}"
+                                       "QProgressBar::chunk {border-radius: 10px;background-color: #AA00FF;}"
+                                       "QProgressBar:disabled {background-color: #ebebeb;color: #ebebeb;}");
 
 
         //FIN de la tabla
@@ -201,15 +215,44 @@ void MainWindow::on_responder_pushButton_clicked()
     }
     else //Respuesta erronea
     {
-        ui->estado_label->setText("Auch! algo anda mal, vuelve a intentarlo");
+        auto mensaje = QString("Auch! vuelte a intentarlo (-10 pts)");
+
+        ui->estado_label->setText(mensaje);
+//        tabla->setCurrentValue();
+//        ui->valorLeft_lcdNumber->display(QString::number(tabla->getTabla()));
+//        ui->valorRight_lcdNumber->display(QString::number(tabla->getCurrentValue()));
+        ui->progressBar->setStyleSheet("QProgressBar {border-radius: 10px;outline: none;background-color: #f1f3f4;}"
+                                       "QProgressBar::chunk {border-radius: 10px;background-color: #C51162;}"
+                                       "QProgressBar:disabled {background-color: #ebebeb;color: #ebebeb;}");
+
+        score->setScore(score->getScore() - 10);
+        score->save();
+        ui->score->display(score->getScore());
     }
 
     ui->respuesta_SpinBox->clear();
     ui->respuesta_SpinBox->focusWidget();
+
+    updateStatus_botonAyuda();
+    titleScoreUpdate();
+
 }
 
 void MainWindow::on_ayuda_pushButton_clicked()
 {
+    if(ui->estado_label->text() == QString::number(tabla->getCurrentValue() * tabla->getTabla()) ||
+            ui->estado_label->text() == QString::number(tabla->getCurrentValue() * tabla->getTabla()) + " AQUI!!")
+    {
+        if(ui->estado_label->text() == QString::number(tabla->getCurrentValue() * tabla->getTabla()) + " AQUI!!")
+        {
+            ui->ayuda_pushButton->setEnabled(false);
+            return;
+        }
+
+        ui->estado_label->setText(ui->estado_label->text() + " AQUI!!");
+        return;
+    }
+
     if(score->getScore() >= 100)
     {
         ui->estado_label->setText(QString::number(tabla->getCurrentValue() * tabla->getTabla()));
@@ -221,4 +264,101 @@ void MainWindow::on_ayuda_pushButton_clicked()
     else
          ui->estado_label->setText("Necesitas tener 100 puntos!");
 
+    updateStatus_botonAyuda();
+}
+
+void MainWindow::updateStatus_botonAyuda()
+{
+    // ACTIVAR O DESABILITAR BOTON AYUDA
+    if(score->getScore() >= 100 && isUiEnable == true)
+        ui->ayuda_pushButton->setEnabled(true);
+    else
+        ui->ayuda_pushButton->setEnabled(false);
+}
+
+void MainWindow::titleScoreUpdate()
+{
+    if(score->getScore() > 10000)
+        ui->title->setText("YA GANASTE!!!");
+
+    else if(score->getScore() > 9000)
+        ui->title->setText("Concentrate!");
+
+    else if(score->getScore() > 8000)
+        ui->title->setText("... shhh!!");
+
+    else if(score->getScore() > 7000)
+        ui->title->setText("Nadie ha podido!");
+
+    else if(score->getScore() > 6000)
+        ui->title->setText("Record mundial!");
+
+    else if(score->getScore() > 5000)
+        ui->title->setText("Insuperable");
+
+    else if(score->getScore() > 4000)
+        ui->title->setText("Profesional!");
+
+    else if(score->getScore() > 3000)
+        ui->title->setText("OMG!! :O");
+
+    else if(score->getScore() > 2000)
+        ui->title->setText("INCREIBLE!! 20");
+
+    else if(score->getScore() > 1900)
+        ui->title->setText("Muy ALTO! 19");
+
+    else if(score->getScore() > 1800)
+        ui->title->setText("Imposible! 18");
+
+    else if(score->getScore() > 1700)
+        ui->title->setText("No puede ser! 17");
+
+    else if(score->getScore() > 1600)
+        ui->title->setText("Grandee! Nivel 16");
+
+    else if(score->getScore() > 1500)
+        ui->title->setText("Sorprendente! 15");
+
+    else if(score->getScore() > 1400)
+        ui->title->setText("Bien! Nivel 14");
+
+    else if(score->getScore() > 1300)
+        ui->title->setText("Buen trabajo! 13");
+
+    else if(score->getScore() > 1200)
+        ui->title->setText("Wow! Nivel 12");
+
+    else if(score->getScore() > 1100)
+        ui->title->setText("Eres Nivel 11");
+
+    else if(score->getScore() > 1000)
+        ui->title->setText("Maravilloso! 10");
+
+    else if(score->getScore() > 900)
+        ui->title->setText("Muy ALTO! 9");
+
+    else if(score->getScore() > 800)
+        ui->title->setText("Imposible! 8");
+
+    else if(score->getScore() > 700)
+        ui->title->setText("No puede ser! 7");
+
+    else if(score->getScore() > 600)
+        ui->title->setText("Grandee!!! 6");
+
+    else if(score->getScore() > 500)
+        ui->title->setText("Sorprendente! 5");
+
+    else if(score->getScore() > 400)
+        ui->title->setText("Muy Bien! Nivel 4");
+
+    else if(score->getScore() > 300)
+        ui->title->setText("Buen trabajo! 3");
+
+    else if(score->getScore() > 200)
+        ui->title->setText("Wow! Nivel 2");
+
+    else if(score->getScore() > 100)
+        ui->title->setText("Eres Nivel 1");
 }
