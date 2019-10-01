@@ -1,0 +1,1427 @@
+[gd_scene load_steps=62 format=2]
+
+[ext_resource path="res://resources/COMIC.TTF" type="DynamicFontData" id=1]
+[ext_resource path="res://resources/button_tabla.tres" type="StyleBox" id=2]
+[ext_resource path="res://sounds_ogg/[Button Tap].ogg" type="AudioStream" id=3]
+[ext_resource path="res://sounds_ogg/[Plus].ogg" type="AudioStream" id=4]
+[ext_resource path="res://sounds_ogg/[ERROR].ogg" type="AudioStream" id=5]
+[ext_resource path="res://resources/timeingame.tscn" type="PackedScene" id=6]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+
+var savedata = Savedata.new()
+var multiplicando = Multiplicando.new()
+
+var puntos_inicial : int = 0
+var bono : int = 0
+var correctos : int = 0
+var fallidos : int = 0
+
+func _notification(what):
+	if what == MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_salir_pressed()
+
+func _ready() -> void:
+	$language.apply_language()
+	savedata.load_data()
+	puntos_inicial = savedata.puntos
+	$Control/VBoxContainer/tabla/valor1.text = String(savedata.tabla_actual)
+	$Control/VBoxContainer/tabla/valor2.text = String(multiplicando.get_number())
+	$Control/VBoxContainer/botones_opciones/ayuda/count.text = String(savedata.ayudas)
+
+func _process(delta: float) -> void:
+	if $Control/VBoxContainer/resultado.text == \"\":
+		$Control/VBoxContainer/teclado/del.disabled = true
+		$Control/VBoxContainer/teclado/ok.disabled = true
+	else:
+		$Control/VBoxContainer/teclado/del.disabled = false
+		$Control/VBoxContainer/teclado/ok.disabled = false
+
+func _on_salir_pressed() -> void:
+	get_tree().change_scene(\"res://scenes/main_menu.tscn\")
+
+func _on_ok_button_down() -> void:
+	savedata.load_data()
+	# Si la respuesta es correcta
+	if int($Control/VBoxContainer/resultado.text) == savedata.tabla_actual * multiplicando.get_current():
+		# Verificar que todo este completado y evitar mostrar -1 en valor2
+		if multiplicando.get_number() != -1:
+			$Control/VBoxContainer/tabla/valor2.text = String(multiplicando.get_current())
+		$TextureProgress.value += 1
+
+		# Actualizar datos por tabla
+		match savedata.tabla_actual:
+			2: savedata.t2[0] += 1
+			3: savedata.t3[0] += 1
+			4: savedata.t4[0] += 1
+			5: savedata.t5[0] += 1
+			6: savedata.t6[0] += 1
+			7: savedata.t7[0] += 1
+			8: savedata.t8[0] += 1
+			9: savedata.t9[0] += 1
+
+		# Update local var
+		correctos += 1
+
+		# update puntos
+		if savedata.puntos < 4000000000:
+			if savedata.tabla_actual < (savedata.nivel + 2):
+				savedata.puntos += 1
+			else:
+				savedata.puntos += 5 + (savedata.nivel * savedata.tabla_actual)
+			savedata.save_data()
+
+		# Animation
+		var plus = preload(\"res://animations/Plus.tscn\").instance()
+		plus.position.x = get_viewport_rect().size.x / 2
+		plus.position.y = get_viewport_rect().size.y / 5
+		plus.z_index = 500
+		$Control/VBoxContainer/resultado.add_child(plus)
+
+		# Audio
+		$plus.play()
+
+		# Verificar que se ha terminado
+		if multiplicando.completed():
+			savedata.load_data()
+
+			match savedata.tabla_actual:
+				2: savedata.t2[2] += 1
+				3: savedata.t3[2] += 1
+				4: savedata.t4[2] += 1
+				5: savedata.t5[2] += 1
+				6: savedata.t6[2] += 1
+				7: savedata.t7[2] += 1
+				8: savedata.t8[2] += 1
+				9: savedata.t9[2] += 1
+
+			# Bono update value
+			if (savedata.puntos - puntos_inicial) < 0:
+				bono = 0
+			else:
+				bono = int((savedata.puntos - puntos_inicial) * rand_range(0.1, 0.3))
+
+			savedata.puntos += bono
+			puntos_inicial += bono
+
+			savedata.save_data()
+			$Control/VBoxContainer/tabla/valor1.text = \"0\"
+			$Control/VBoxContainer/tabla/valor2.text = \"0\"
+			$Control/VBoxContainer/resultado.text = \"\"
+			$transition.visible = true
+
+			yield(get_tree().create_timer(0.25), 'timeout')
+			victoria()
+
+	else: # Si la respuesta no es correcta
+		match savedata.tabla_actual:
+			2: savedata.t2[1] += 1
+			3: savedata.t3[1] += 1
+			4: savedata.t4[1] += 1
+			5: savedata.t5[1] += 1
+			6: savedata.t6[1] += 1
+			7: savedata.t7[1] += 1
+			8: savedata.t8[1] += 1
+			9: savedata.t9[1] += 1
+
+		# Update local var
+		fallidos += 1
+
+		# update puntos
+		if savedata.puntos > 0:
+			savedata.puntos -= (10 + (savedata.nivel * savedata.tabla_actual))
+
+			if savedata.puntos < 0:
+				savedata.puntos = 0
+
+			savedata.save_data()
+
+		# Animation
+		var less = preload(\"res://animations/Less.tscn\").instance()
+		less.position.x = get_viewport_rect().size.x / 2
+		less.position.y = get_viewport_rect().size.y / 5
+		less.z_index = 500
+		$Control/VBoxContainer/resultado.add_child(less)
+
+		# Audio
+		$error.play()
+
+	$Control/VBoxContainer/resultado.text = \"\"
+
+func _on_ayuda_pressed() -> void:
+	if savedata.ayudas > 0:
+		savedata.ayudas -= 1
+		$Control/VBoxContainer/botones_opciones/ayuda.text = String(savedata.tabla_actual * multiplicando.get_current())
+		$Control/VBoxContainer/botones_opciones/ayuda/count.text = String(savedata.ayudas)
+		savedata.save_data() 
+		$Control/VBoxContainer/botones_opciones/ayuda.disabled = true
+		yield(get_tree().create_timer(1), \"timeout\")
+		$Control/VBoxContainer/botones_opciones/ayuda.disabled = false
+		
+		if $language.lang == \"es\":
+			$Control/VBoxContainer/botones_opciones/ayuda.text = \"Ayuda\"
+		elif $language.lang == \"en\":
+			$Control/VBoxContainer/botones_opciones/ayuda.text = \"Help\"
+	else:
+		$Control/VBoxContainer/botones_opciones/ayuda.text = \".\"
+		$Control/VBoxContainer/botones_opciones/ayuda.disabled = true
+		yield(get_tree().create_timer(0.33), \"timeout\")
+		$Control/VBoxContainer/botones_opciones/ayuda.text += \".\"
+		yield(get_tree().create_timer(0.33), \"timeout\")
+		$Control/VBoxContainer/botones_opciones/ayuda.text += \".\"
+		yield(get_tree().create_timer(0.33), \"timeout\")
+		$Control/VBoxContainer/botones_opciones/ayuda.disabled = false
+		
+		if $language.lang == \"es\":
+			$Control/VBoxContainer/botones_opciones/ayuda.text = \"Ayuda\"
+		elif $language.lang == \"en\":
+			$Control/VBoxContainer/botones_opciones/ayuda.text = \"Help\"
+
+func victoria() -> void:
+	var fracaso : bool = savedata.puntos - puntos_inicial < 0
+
+	$Victoria/VBoxContainer/Control/HBoxContainer/correctos.text = String(correctos)
+	$Victoria/VBoxContainer/Control/HBoxContainer/fallidos.text = String(fallidos)
+	$Victoria/VBoxContainer/bonos.text = \"0\"
+	$Victoria/VBoxContainer/puntos.text = \"0\"
+	$Victoria/VBoxContainer/total.text = \"0\"
+
+	# Verificar tipo de animacion
+	if not fracaso:
+		if $language.lang == \"es\":
+			$Victoria/VBoxContainer/VBoxContainer/titulo.text = \"Completado\"
+		elif $language.lang == \"en\":
+			$Victoria/VBoxContainer/VBoxContainer/titulo.text = \"Completed\"
+			
+		$Victoria/Victoria_AnimationPlayer.play(\"init\")
+	else:
+		if $language.lang == \"es\":
+			$Victoria/VBoxContainer/VBoxContainer/titulo.text = \"Fallaste\"
+		elif $language.lang == \"en\":
+			$Victoria/VBoxContainer/VBoxContainer/titulo.text = \"Failed\"
+		$Victoria/Victoria_AnimationPlayer.play(\"init_red\")
+
+	# Point Animation
+	for x in range(abs(savedata.puntos - puntos_inicial)):
+		if not fracaso:
+			if x % 10 == 0:
+				var plus = preload(\"res://animations/Plus.tscn\").instance()
+				plus.position.x = (get_viewport().size.x / 2) + rand_range(-100, 100)
+				plus.position.y = $Victoria/VBoxContainer/puntos.rect_global_position.y + rand_range(-100, 100)
+				add_child(plus)
+				$plus.play()
+
+			$Victoria/VBoxContainer/puntos.text = String(int($Victoria/VBoxContainer/puntos.text) + 1)
+			$Victoria/VBoxContainer/total.text = String(int($Victoria/VBoxContainer/total.text) + 1)
+
+			yield(get_tree().create_timer(0.0025), \"timeout\")
+		else:
+			if x % 10 == 0:
+				var less = preload(\"res://animations/Less.tscn\").instance()
+				less.position.x = (get_viewport().size.x / 2) + rand_range(-100, 100)
+				less.position.y = $Victoria/VBoxContainer/puntos.rect_global_position.y + rand_range(-100, 100)
+				add_child(less)
+				$error.play()
+
+			$Victoria/VBoxContainer/puntos.text = String(int($Victoria/VBoxContainer/puntos.text) - 1)
+			$Victoria/VBoxContainer/total.text = String(int($Victoria/VBoxContainer/total.text) - 1)
+
+			yield(get_tree().create_timer(0.0025), \"timeout\")
+
+	# Bonus Animation
+	yield(get_tree().create_timer(0.5), \"timeout\")
+
+	for x in range(bono):
+		if x % 10 == 0:
+			var plus = preload(\"res://animations/Plus.tscn\").instance()
+			plus.position.x = (get_viewport().size.x / 2) + rand_range(-100, 100)
+			plus.position.y = $Victoria/VBoxContainer/bonos.rect_global_position.y + rand_range(-100, 100)
+			add_child(plus)
+			$plus.play()
+
+		$Victoria/VBoxContainer/bonos.text = String(int($Victoria/VBoxContainer/bonos.text) + 1)
+		$Victoria/VBoxContainer/total.text = String(int($Victoria/VBoxContainer/total.text) + 1)
+
+		yield(get_tree().create_timer(0.005), \"timeout\")"
+
+[sub_resource type="Gradient" id=2]
+colors = PoolColorArray( 0.631373, 0.309804, 0.639216, 1, 0.796078, 0.270588, 0.298039, 1 )
+
+[sub_resource type="GradientTexture" id=3]
+gradient = SubResource( 2 )
+
+[sub_resource type="Animation" id=4]
+resource_name = "hue"
+length = 5.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:texture_progress:gradient:colors")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 2.5, 5 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ PoolColorArray( 0.631373, 0.309804, 0.639216, 1, 0.796078, 0.270588, 0.298039, 1 ), PoolColorArray( 0.438432, 0.309804, 0.639216, 1, 0.796078, 0.287059, 0.596863, 1 ), PoolColorArray( 0.631373, 0.309804, 0.639216, 1, 0.796078, 0.270588, 0.298039, 1 ) ]
+}
+
+[sub_resource type="GDScript" id=5]
+script/source = "extends AnimationPlayer
+
+func _ready():
+	play(\"hue\")
+"
+
+[sub_resource type="DynamicFont" id=6]
+size = 100
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=7]
+size = 80
+font_data = ExtResource( 1 )
+
+[sub_resource type="StyleBoxFlat" id=8]
+bg_color = Color( 0.945098, 0.952941, 0.956863, 1 )
+corner_radius_top_left = 10
+corner_radius_bottom_left = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=9]
+bg_color = Color( 0.862745, 0.301961, 0.254902, 1 )
+corner_radius_top_left = 10
+corner_radius_bottom_left = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=10]
+bg_color = Color( 0.945098, 0.952941, 0.956863, 1 )
+corner_radius_top_left = 10
+corner_radius_bottom_left = 10
+anti_aliasing = false
+anti_aliasing_size = 2
+
+[sub_resource type="DynamicFont" id=11]
+size = 30
+font_data = ExtResource( 1 )
+
+[sub_resource type="StyleBoxFlat" id=12]
+bg_color = Color( 0.462745, 0.72549, 0.929412, 1 )
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=13]
+bg_color = Color( 0.945098, 0.952941, 0.956863, 1 )
+corner_radius_bottom_right = 10
+anti_aliasing = false
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=14]
+content_margin_left = 0.0
+content_margin_right = 0.0
+content_margin_top = 0.0
+content_margin_bottom = 0.0
+bg_color = Color( 0.462745, 0.72549, 0.929412, 1 )
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+anti_aliasing_size = 2
+
+[sub_resource type="DynamicFont" id=15]
+size = 30
+font_data = ExtResource( 1 )
+
+[sub_resource type="StyleBoxFlat" id=16]
+bg_color = Color( 0.945098, 0.952941, 0.956863, 1 )
+anti_aliasing = false
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=17]
+bg_color = Color( 0.462745, 0.72549, 0.929412, 1 )
+corner_radius_top_left = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=18]
+bg_color = Color( 0.945098, 0.952941, 0.956863, 1 )
+corner_radius_top_left = 10
+anti_aliasing = false
+anti_aliasing_size = 2
+
+[sub_resource type="DynamicFont" id=19]
+size = 30
+font_data = ExtResource( 1 )
+
+[sub_resource type="GDScript" id=20]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")
+	connect(\"button_down\", self, \"button_down\")
+
+func button_down() -> void:
+	get_parent().get_node(\"tap_sound\").play()
+	if label.text.length() <= 5:
+		label.text += \"1\""
+
+[sub_resource type="StyleBoxFlat" id=21]
+bg_color = Color( 0.462745, 0.72549, 0.929412, 1 )
+anti_aliasing_size = 2
+
+[sub_resource type="GDScript" id=22]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")
+	connect(\"button_down\", self, \"button_down\")
+
+func button_down() -> void:
+	get_parent().get_node(\"tap_sound\").play()
+	if label.text.length() <= 5:
+		label.text += \"2\""
+
+[sub_resource type="StyleBoxFlat" id=23]
+bg_color = Color( 0.462745, 0.72549, 0.929412, 1 )
+corner_radius_top_right = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=24]
+bg_color = Color( 0.945098, 0.952941, 0.956863, 1 )
+corner_radius_top_right = 10
+anti_aliasing = false
+anti_aliasing_size = 2
+
+[sub_resource type="GDScript" id=25]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")
+	connect(\"button_down\", self, \"button_down\")
+
+func button_down() -> void:
+	get_parent().get_node(\"tap_sound\").play()
+	if label.text.length() <= 5:
+		label.text += \"3\""
+
+[sub_resource type="StyleBoxFlat" id=26]
+bg_color = Color( 0.945098, 0.952941, 0.956863, 1 )
+anti_aliasing = false
+
+[sub_resource type="GDScript" id=27]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")
+	connect(\"button_down\", self, \"button_down\")
+
+func button_down() -> void:
+	get_parent().get_node(\"tap_sound\").play()
+	if label.text.length() <= 5:
+		label.text += \"4\""
+
+[sub_resource type="GDScript" id=28]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")
+	connect(\"button_down\", self, \"button_down\")
+
+func button_down() -> void:
+	get_parent().get_node(\"tap_sound\").play()
+	if label.text.length() <= 5:
+		label.text += \"5\""
+
+[sub_resource type="GDScript" id=29]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")
+	connect(\"button_down\", self, \"button_down\")
+
+func button_down() -> void:
+	get_parent().get_node(\"tap_sound\").play()
+	if label.text.length() <= 5:
+		label.text += \"6\""
+
+[sub_resource type="GDScript" id=30]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")
+	connect(\"button_down\", self, \"button_down\")
+
+func button_down() -> void:
+	get_parent().get_node(\"tap_sound\").play()
+	if label.text.length() <= 5:
+		label.text += \"7\""
+
+[sub_resource type="GDScript" id=31]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")
+	connect(\"button_down\", self, \"button_down\")
+
+func button_down() -> void:
+	get_parent().get_node(\"tap_sound\").play()
+	if label.text.length() <= 5:
+		label.text += \"8\""
+
+[sub_resource type="GDScript" id=32]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")
+	connect(\"button_down\", self, \"button_down\")
+
+func button_down() -> void:
+	get_parent().get_node(\"tap_sound\").play()
+	if label.text.length() <= 5:
+		label.text += \"9\""
+
+[sub_resource type="StyleBoxFlat" id=33]
+bg_color = Color( 0.862745, 0.301961, 0.254902, 1 )
+corner_radius_bottom_left = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=34]
+bg_color = Color( 0.945098, 0.952941, 0.956863, 1 )
+corner_radius_bottom_left = 10
+anti_aliasing = false
+anti_aliasing_size = 2
+
+[sub_resource type="GDScript" id=35]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")
+	connect(\"button_down\", self, \"button_down\")
+
+func button_down() -> void:
+	get_parent().get_node(\"tap_sound\").play()
+	if label.text.length() > 0:
+		label.text = label.text.substr(0, label.text.length() - 1)"
+
+[sub_resource type="GDScript" id=36]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")
+	connect(\"button_down\", self, \"button_down\")
+
+func button_down() -> void:
+	get_parent().get_node(\"tap_sound\").play()
+	if label.text.length() <= 5:
+		label.text += \"0\""
+
+[sub_resource type="StyleBoxFlat" id=37]
+bg_color = Color( 0.0901961, 0.627451, 0.364706, 1 )
+corner_radius_bottom_right = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=38]
+bg_color = Color( 0.945098, 0.952941, 0.956863, 1 )
+corner_radius_bottom_right = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=39]
+bg_color = Color( 0.945098, 0.952941, 0.956863, 1 )
+corner_radius_bottom_right = 10
+anti_aliasing = false
+anti_aliasing_size = 2
+
+[sub_resource type="GDScript" id=40]
+script/source = "extends Button
+
+var label : Label
+
+func _ready() -> void:
+	label = get_parent().get_parent().get_node(\"resultado\")"
+
+[sub_resource type="Animation" id=41]
+length = 0.3
+tracks/0/type = "value"
+tracks/0/path = NodePath("transition:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2 ),
+"transitions": PoolRealArray( 2, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Control/VBoxContainer:rect_position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( 0.5, 1 ),
+"update": 0,
+"values": [ Vector2( 500, 0 ), Vector2( 0, 0 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("transition:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+
+[sub_resource type="Animation" id=42]
+length = 0.5
+
+[sub_resource type="GDScript" id=43]
+script/source = "extends AnimationPlayer
+
+func _ready() -> void:
+	play(\"entrada\")"
+
+[sub_resource type="GDScript" id=44]
+script/source = "extends Control
+
+func _ready():
+	pass
+
+func _input(event):
+	if visible and event is InputEventScreenTouch and event.pressed:
+		get_tree().change_scene(\"res://scenes/main_menu.tscn\")
+"
+
+[sub_resource type="StyleBoxFlat" id=45]
+bg_color = Color( 0, 0, 0, 0.117647 )
+corner_radius_bottom_right = 100
+corner_radius_bottom_left = 100
+corner_detail = 30
+anti_aliasing_size = 2
+
+[sub_resource type="DynamicFont" id=46]
+size = 50
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=47]
+size = 20
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=48]
+size = 45
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=49]
+size = 35
+font_data = ExtResource( 1 )
+
+[sub_resource type="StyleBoxFlat" id=50]
+bg_color = Color( 0, 0, 0, 0.117647 )
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+corner_detail = 30
+shadow_color = Color( 0, 0, 0, 0 )
+anti_aliasing_size = 2
+
+[sub_resource type="DynamicFont" id=51]
+size = 35
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=52]
+size = 25
+font_data = ExtResource( 1 )
+
+[sub_resource type="Animation" id=53]
+length = 0.5
+tracks/0/type = "value"
+tracks/0/path = NodePath("ColorRect2:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( -2, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("ColorRect2:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath(".:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ true ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("ColorRect:color")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Color( 0.0901961, 0.627451, 0.364706, 1 ) ]
+}
+
+[sub_resource type="Animation" id=54]
+length = 0.5
+tracks/0/type = "value"
+tracks/0/path = NodePath("ColorRect2:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( -2, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("ColorRect2:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath(".:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ true ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("ColorRect:color")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Color( 1, 0.313726, 0.313726, 1 ) ]
+}
+
+[sub_resource type="GDScript" id=55]
+script/source = "extends Node
+
+var language : Language = Language.new()
+export var lang = 'es'
+
+func _ready() -> void:
+	language.load_data()
+	lang = language.language
+	
+export master func apply_language():
+	language.load_data()
+	
+	if language.language == 'en':
+		get_parent().get_node(\"Control/VBoxContainer/botones_opciones/salir\").text = \"Exit\"
+		get_parent().get_node(\"Control/VBoxContainer/botones_opciones/ayuda\").text = \"Help\"
+		get_parent().get_node(\"Victoria/VBoxContainer/VBoxContainer/resultados\").text = \"Results\"
+		get_parent().get_node(\"Victoria/VBoxContainer/puntos_label\").text = \"Score\"
+		get_parent().get_node(\"Victoria/VBoxContainer/bonos_label\").text = \"Bonus\"
+		get_parent().get_node(\"Victoria/VBoxContainer/Control/HBoxContainer/correct_label\").text = \"Hits:\"
+		get_parent().get_node(\"Victoria/VBoxContainer/Control/HBoxContainer/fallidos_label\").text = \"Mistakes:\"
+		get_parent().get_node(\"Victoria/VBoxContainer/toca_para_continuar\").text = \"Touch to continue\""
+
+[node name="Multiplicando" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 6.10352e-005
+script = SubResource( 1 )
+
+[node name="background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="TextureProgress" type="TextureProgress" parent="."]
+editor/display_folded = true
+anchor_right = 1.0
+margin_right = -6.10352e-005
+margin_bottom = 10.0
+rect_min_size = Vector2( 0, 10 )
+size_flags_horizontal = 3
+size_flags_vertical = 3
+max_value = 11.0
+texture_progress = SubResource( 3 )
+nine_patch_stretch = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="TextureProgress"]
+playback_speed = 3.0
+anims/hue = SubResource( 4 )
+script = SubResource( 5 )
+
+[node name="Control" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 30.0
+margin_top = 30.0
+margin_right = -30.0
+margin_bottom = -30.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="tabla" type="HBoxContainer" parent="Control/VBoxContainer"]
+editor/display_folded = true
+margin_right = 420.0
+margin_bottom = 141.0
+alignment = 1
+
+[node name="valor1" type="Label" parent="Control/VBoxContainer/tabla"]
+margin_right = 137.0
+margin_bottom = 141.0
+size_flags_horizontal = 3
+size_flags_vertical = 5
+custom_fonts/font = SubResource( 6 )
+custom_colors/font_color = Color( 0.435294, 0.435294, 0.435294, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="x" type="Label" parent="Control/VBoxContainer/tabla"]
+margin_left = 141.0
+margin_right = 278.0
+margin_bottom = 141.0
+size_flags_horizontal = 3
+size_flags_vertical = 5
+custom_fonts/font = SubResource( 6 )
+custom_colors/font_color = Color( 0.435294, 0.435294, 0.435294, 1 )
+text = "x"
+align = 1
+valign = 1
+
+[node name="valor2" type="Label" parent="Control/VBoxContainer/tabla"]
+margin_left = 282.0
+margin_right = 420.0
+margin_bottom = 141.0
+size_flags_horizontal = 3
+size_flags_vertical = 5
+custom_fonts/font = SubResource( 6 )
+custom_colors/font_color = Color( 0.435294, 0.435294, 0.435294, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="resultado" type="Label" parent="Control/VBoxContainer"]
+margin_top = 145.0
+margin_right = 420.0
+margin_bottom = 435.0
+size_flags_horizontal = 3
+size_flags_vertical = 7
+custom_fonts/font = SubResource( 7 )
+custom_colors/font_color = Color( 0.435294, 0.435294, 0.435294, 1 )
+align = 1
+valign = 1
+
+[node name="botones_opciones" type="HBoxContainer" parent="Control/VBoxContainer"]
+margin_top = 439.0
+margin_right = 420.0
+margin_bottom = 499.0
+rect_min_size = Vector2( 0, 40 )
+size_flags_horizontal = 3
+custom_constants/separation = 0
+
+[node name="salir" type="Button" parent="Control/VBoxContainer/botones_opciones"]
+margin_right = 210.0
+margin_bottom = 60.0
+rect_min_size = Vector2( 0, 60 )
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 8 )
+custom_styles/pressed = SubResource( 9 )
+custom_styles/normal = SubResource( 10 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "Salir"
+
+[node name="ayuda" type="Button" parent="Control/VBoxContainer/botones_opciones"]
+margin_left = 210.0
+margin_right = 420.0
+margin_bottom = 60.0
+rect_min_size = Vector2( 0, 60 )
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = ExtResource( 2 )
+custom_styles/pressed = SubResource( 12 )
+custom_styles/disabled = ExtResource( 2 )
+custom_styles/normal = SubResource( 13 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "Ayuda"
+
+[node name="count" type="Button" parent="Control/VBoxContainer/botones_opciones/ayuda"]
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -32.6667
+margin_top = -10.3333
+margin_right = 17.3333
+margin_bottom = 39.6667
+rect_min_size = Vector2( 50, 50 )
+size_flags_horizontal = 8
+size_flags_vertical = 8
+custom_styles/hover = SubResource( 14 )
+custom_styles/pressed = SubResource( 14 )
+custom_styles/focus = SubResource( 14 )
+custom_styles/disabled = SubResource( 14 )
+custom_styles/normal = SubResource( 14 )
+custom_fonts/font = SubResource( 15 )
+custom_colors/font_color_disabled = Color( 1, 1, 1, 1 )
+disabled = true
+shortcut_in_tooltip = false
+button_mask = 0
+enabled_focus_mode = 0
+text = "0"
+
+[node name="teclado" type="GridContainer" parent="Control/VBoxContainer"]
+margin_top = 503.0
+margin_right = 420.0
+margin_bottom = 794.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/vseparation = 0
+custom_constants/hseparation = 0
+columns = 3
+
+[node name="1" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_right = 140.0
+margin_bottom = 72.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 17 )
+custom_styles/normal = SubResource( 18 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "1"
+script = SubResource( 20 )
+
+[node name="2" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 140.0
+margin_right = 280.0
+margin_bottom = 72.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 21 )
+custom_styles/normal = SubResource( 16 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "2"
+script = SubResource( 22 )
+
+[node name="3" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 280.0
+margin_right = 420.0
+margin_bottom = 72.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 23 )
+custom_styles/normal = SubResource( 24 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "3"
+script = SubResource( 25 )
+
+[node name="4" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_top = 72.0
+margin_right = 140.0
+margin_bottom = 144.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 21 )
+custom_styles/normal = SubResource( 26 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "4"
+script = SubResource( 27 )
+
+[node name="5" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 140.0
+margin_top = 72.0
+margin_right = 280.0
+margin_bottom = 144.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 21 )
+custom_styles/normal = SubResource( 26 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "5"
+script = SubResource( 28 )
+
+[node name="6" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 280.0
+margin_top = 72.0
+margin_right = 420.0
+margin_bottom = 144.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 21 )
+custom_styles/normal = SubResource( 26 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "6"
+script = SubResource( 29 )
+
+[node name="7" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_top = 144.0
+margin_right = 140.0
+margin_bottom = 216.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 21 )
+custom_styles/normal = SubResource( 26 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "7"
+script = SubResource( 30 )
+
+[node name="8" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 140.0
+margin_top = 144.0
+margin_right = 280.0
+margin_bottom = 216.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 21 )
+custom_styles/normal = SubResource( 26 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "8"
+script = SubResource( 31 )
+
+[node name="9" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 280.0
+margin_top = 144.0
+margin_right = 420.0
+margin_bottom = 216.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 21 )
+custom_styles/normal = SubResource( 26 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "9"
+script = SubResource( 32 )
+
+[node name="del" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_top = 216.0
+margin_right = 140.0
+margin_bottom = 288.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 33 )
+custom_styles/disabled = SubResource( 34 )
+custom_styles/normal = SubResource( 34 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color_disabled = Color( 0.501961, 0.52549, 0.6, 0.486275 )
+custom_colors/font_color = Color( 0.862745, 0.301961, 0.254902, 1 )
+custom_colors/font_color_hover = Color( 0.862745, 0.301961, 0.254902, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+disabled = true
+enabled_focus_mode = 0
+text = "Del"
+script = SubResource( 35 )
+
+[node name="0" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 140.0
+margin_top = 216.0
+margin_right = 280.0
+margin_bottom = 288.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 21 )
+custom_styles/normal = SubResource( 26 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_hover = Color( 0.501961, 0.52549, 0.6, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "0"
+script = SubResource( 36 )
+
+[node name="ok" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 280.0
+margin_top = 216.0
+margin_right = 420.0
+margin_bottom = 288.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 16 )
+custom_styles/pressed = SubResource( 37 )
+custom_styles/disabled = SubResource( 38 )
+custom_styles/normal = SubResource( 39 )
+custom_fonts/font = SubResource( 19 )
+custom_colors/font_color_disabled = Color( 0.501961, 0.52549, 0.6, 0.486275 )
+custom_colors/font_color = Color( 0.0901961, 0.627451, 0.364706, 1 )
+custom_colors/font_color_hover = Color( 0.0901961, 0.627451, 0.364706, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+disabled = true
+enabled_focus_mode = 0
+text = "Ok"
+script = SubResource( 40 )
+
+[node name="tap_sound" type="AudioStreamPlayer" parent="Control/VBoxContainer/teclado"]
+stream = ExtResource( 3 )
+volume_db = -15.0
+
+[node name="transition" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 1, 1, 1, 0 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/entrada = SubResource( 41 )
+anims/salida = SubResource( 42 )
+script = SubResource( 43 )
+
+[node name="plus" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 4 )
+volume_db = -15.0
+
+[node name="error" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 5 )
+volume_db = -15.0
+
+[node name="Victoria" type="Control" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource( 44 )
+
+[node name="ColorRect" type="ColorRect" parent="Victoria"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 1, 0.313726, 0.313726, 1 )
+
+[node name="PanelContainer" type="PanelContainer" parent="Victoria"]
+anchor_right = 1.0
+margin_left = 1.42505
+margin_right = 1.42505
+margin_bottom = 150.0
+rect_min_size = Vector2( 0, 150 )
+custom_styles/panel = SubResource( 45 )
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Victoria"]
+editor/display_folded = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 30.0
+margin_top = 30.0
+margin_right = -30.0
+margin_bottom = -30.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Victoria/VBoxContainer"]
+margin_right = 420.0
+margin_bottom = 100.0
+custom_constants/separation = 0
+
+[node name="titulo" type="Label" parent="Victoria/VBoxContainer/VBoxContainer"]
+margin_right = 420.0
+margin_bottom = 71.0
+custom_fonts/font = SubResource( 46 )
+text = "FALLASTE"
+align = 1
+valign = 1
+
+[node name="resultados" type="Label" parent="Victoria/VBoxContainer/VBoxContainer"]
+margin_top = 71.0
+margin_right = 420.0
+margin_bottom = 100.0
+custom_fonts/font = SubResource( 47 )
+text = "Resultados"
+align = 1
+valign = 1
+
+[node name="HSeparator" type="HSeparator" parent="Victoria/VBoxContainer"]
+modulate = Color( 1, 1, 1, 0 )
+margin_top = 104.0
+margin_right = 420.0
+margin_bottom = 136.0
+size_flags_vertical = 3
+
+[node name="puntos_label" type="Label" parent="Victoria/VBoxContainer"]
+margin_top = 140.0
+margin_right = 420.0
+margin_bottom = 204.0
+custom_fonts/font = SubResource( 48 )
+text = "Puntos"
+align = 1
+valign = 1
+
+[node name="puntos" type="Label" parent="Victoria/VBoxContainer"]
+margin_top = 208.0
+margin_right = 420.0
+margin_bottom = 258.0
+custom_fonts/font = SubResource( 49 )
+text = "75"
+align = 1
+valign = 1
+
+[node name="HSeparator2" type="HSeparator" parent="Victoria/VBoxContainer"]
+modulate = Color( 1, 1, 1, 0 )
+margin_top = 262.0
+margin_right = 420.0
+margin_bottom = 294.0
+size_flags_vertical = 3
+
+[node name="bonos_label" type="Label" parent="Victoria/VBoxContainer"]
+margin_top = 298.0
+margin_right = 420.0
+margin_bottom = 362.0
+custom_fonts/font = SubResource( 48 )
+text = "Bonificación"
+align = 1
+valign = 1
+
+[node name="bonos" type="Label" parent="Victoria/VBoxContainer"]
+margin_top = 366.0
+margin_right = 420.0
+margin_bottom = 416.0
+custom_fonts/font = SubResource( 49 )
+text = "75"
+align = 1
+valign = 1
+
+[node name="HSeparator3" type="HSeparator" parent="Victoria/VBoxContainer"]
+modulate = Color( 1, 1, 1, 0 )
+margin_top = 420.0
+margin_right = 420.0
+margin_bottom = 452.0
+size_flags_vertical = 3
+
+[node name="total_label" type="Label" parent="Victoria/VBoxContainer"]
+margin_top = 456.0
+margin_right = 420.0
+margin_bottom = 520.0
+custom_fonts/font = SubResource( 48 )
+text = "Total"
+align = 1
+valign = 1
+
+[node name="total" type="Label" parent="Victoria/VBoxContainer"]
+margin_top = 524.0
+margin_right = 420.0
+margin_bottom = 574.0
+custom_fonts/font = SubResource( 49 )
+text = "150"
+align = 1
+valign = 1
+
+[node name="HSeparator4" type="HSeparator" parent="Victoria/VBoxContainer"]
+modulate = Color( 1, 1, 1, 0 )
+margin_top = 578.0
+margin_right = 420.0
+margin_bottom = 610.0
+size_flags_vertical = 3
+
+[node name="Control" type="PanelContainer" parent="Victoria/VBoxContainer"]
+margin_top = 614.0
+margin_right = 420.0
+margin_bottom = 718.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/panel = SubResource( 50 )
+
+[node name="HBoxContainer" type="GridContainer" parent="Victoria/VBoxContainer/Control"]
+margin_right = 420.0
+margin_bottom = 104.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 2
+
+[node name="correct_label" type="Label" parent="Victoria/VBoxContainer/Control/HBoxContainer"]
+margin_right = 208.0
+margin_bottom = 50.0
+size_flags_horizontal = 3
+custom_fonts/font = SubResource( 51 )
+text = "Correctos: "
+align = 1
+valign = 1
+
+[node name="correctos" type="Label" parent="Victoria/VBoxContainer/Control/HBoxContainer"]
+margin_left = 212.0
+margin_right = 420.0
+margin_bottom = 50.0
+size_flags_horizontal = 3
+custom_fonts/font = SubResource( 51 )
+text = "12"
+align = 1
+valign = 1
+
+[node name="fallidos_label" type="Label" parent="Victoria/VBoxContainer/Control/HBoxContainer"]
+margin_top = 54.0
+margin_right = 208.0
+margin_bottom = 104.0
+size_flags_horizontal = 3
+custom_fonts/font = SubResource( 51 )
+text = "Fallidos: "
+align = 1
+valign = 1
+
+[node name="fallidos" type="Label" parent="Victoria/VBoxContainer/Control/HBoxContainer"]
+margin_left = 212.0
+margin_top = 54.0
+margin_right = 420.0
+margin_bottom = 104.0
+size_flags_horizontal = 3
+custom_fonts/font = SubResource( 51 )
+text = "6"
+align = 1
+valign = 1
+
+[node name="HSeparator5" type="HSeparator" parent="Victoria/VBoxContainer"]
+modulate = Color( 1, 1, 1, 0 )
+margin_top = 722.0
+margin_right = 420.0
+margin_bottom = 754.0
+size_flags_vertical = 3
+
+[node name="toca_para_continuar" type="Label" parent="Victoria/VBoxContainer"]
+margin_top = 758.0
+margin_right = 420.0
+margin_bottom = 794.0
+custom_fonts/font = SubResource( 52 )
+text = "Toca para continuar"
+align = 1
+valign = 1
+
+[node name="ColorRect2" type="ColorRect" parent="Victoria"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Victoria_AnimationPlayer" type="AnimationPlayer" parent="Victoria"]
+anims/init = SubResource( 53 )
+anims/init_red = SubResource( 54 )
+
+[node name="tiempo_de_juego" parent="." instance=ExtResource( 6 )]
+
+[node name="language" type="Node" parent="."]
+script = SubResource( 55 )
+
+[connection signal="pressed" from="Control/VBoxContainer/botones_opciones/salir" to="." method="_on_salir_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/botones_opciones/ayuda" to="." method="_on_ayuda_pressed"]
+[connection signal="button_down" from="Control/VBoxContainer/teclado/ok" to="." method="_on_ok_button_down"]

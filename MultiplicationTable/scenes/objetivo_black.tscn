@@ -1,0 +1,366 @@
+[gd_scene load_steps=24 format=2]
+
+[ext_resource path="res://animations/nieve.tscn" type="PackedScene" id=1]
+[ext_resource path="res://resources/COMIC.TTF" type="DynamicFontData" id=2]
+[ext_resource path="res://images/log5.png" type="Texture" id=3]
+[ext_resource path="res://resources/timeingame.tscn" type="PackedScene" id=4]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+
+var language : Language = Language.new()
+var objetivos = Objetivos.new()
+var savedata : Savedata = Savedata.new()
+var icon : Texture = preload(\"res://images/list.png\")
+
+func _ready() -> void:
+	$language.apply_language()
+	$Control/VBoxContainer/ItemList.clear()
+	objetivos.check_objetivo()
+	var data = objetivos.get_objetivo()
+	
+	for x in data:
+		if x == data[0]:
+			$Control/VBoxContainer/objetivo.text = x
+		else:
+			$Control/VBoxContainer/ItemList.add_item(x, icon, false)
+
+func _on_volver_pressed() -> void:
+	get_tree().change_scene(\"res://scenes/main_menu_black.tscn\")
+
+func _notification(what):
+	if what == MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_volver_pressed()
+		
+#func _input(event):
+#	if event.is_action_pressed(\"ui_up\"):
+#		savedata.load_data()
+#		savedata.objetivo += 1
+#		savedata.save_data()
+#		_ready()
+#	elif event.is_action_pressed(\"ui_down\"):
+#		savedata.load_data()
+#		savedata.objetivo -= 1
+#		savedata.save_data()
+#		_ready()
+
+func _on_lang_pressed() -> void:
+	language.load_data()
+	
+	if language.language == 'es':
+		language.language = 'en'
+		
+	elif language.language == 'en':
+		language.language = 'es'
+	
+	language.save_data()
+	$language.apply_language()
+	
+	objetivos.check_objetivo()
+	var data = objetivos.get_objetivo()
+	
+	$Control/VBoxContainer/ItemList.clear()
+	
+	for x in data:
+		if x == data[0]:
+			$Control/VBoxContainer/objetivo.text = x
+		else:
+			$Control/VBoxContainer/ItemList.add_item(x, icon, false)
+"
+
+[sub_resource type="DynamicFont" id=2]
+size = 30
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxFlat" id=3]
+bg_color = Color( 0.109804, 0.160784, 0.219608, 1 )
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=4]
+bg_color = Color( 0.129412, 0.180392, 0.239216, 1 )
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing_size = 2
+
+[sub_resource type="DynamicFont" id=5]
+size = 25
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxLine" id=6]
+color = Color( 1, 1, 1, 0.392157 )
+
+[sub_resource type="DynamicFont" id=7]
+size = 22
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxEmpty" id=8]
+
+[sub_resource type="StyleBoxFlat" id=9]
+bg_color = Color( 1, 1, 1, 0.196078 )
+
+[sub_resource type="StyleBoxEmpty" id=10]
+
+[sub_resource type="StyleBoxEmpty" id=11]
+
+[sub_resource type="StyleBoxEmpty" id=12]
+
+[sub_resource type="StyleBoxEmpty" id=13]
+
+[sub_resource type="DynamicFont" id=14]
+size = 20
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=15]
+size = 18
+font_data = ExtResource( 2 )
+
+[sub_resource type="Animation" id=16]
+length = 0.3
+tracks/0/type = "value"
+tracks/0/path = NodePath("Control/VBoxContainer:rect_position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( 0.5, 1 ),
+"update": 0,
+"values": [ Vector2( 0, 600 ), Vector2( 0, 0 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("transition:color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( -2, 0.5 ),
+"update": 0,
+"values": [ Color( 0.0823529, 0.12549, 0.168627, 1 ), Color( 0.0823529, 0.12549, 0.168627, 0 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("transition:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+
+[sub_resource type="Animation" id=17]
+length = 0.5
+
+[sub_resource type="GDScript" id=18]
+script/source = "extends AnimationPlayer
+
+func _ready() -> void:
+	play(\"entrada\")"
+
+[sub_resource type="GDScript" id=19]
+script/source = "extends Node
+
+var language : Language = Language.new()
+export var lang = 'es'
+
+func _ready() -> void:
+	language.load_data()
+	lang = language.language
+	
+export master func apply_language():
+	language.load_data()
+	
+	if language.language == 'en':
+		get_parent().get_node(\"Control/VBoxContainer/TITULO\").text = \"Objective\"
+		get_parent().get_node(\"Control/VBoxContainer/info\").text = \"Development by Luis Romero, Godot 3.1.\\n@CreyTuning\"
+		get_parent().get_node(\"Control/VBoxContainer/botones_opciones/volver\").text = \"Back\"
+		get_parent().get_node(\"Control/VBoxContainer/TITULO/lang\").text = \"Eng\"
+		
+	elif language.language == 'es':
+		get_parent().get_node(\"Control/VBoxContainer/TITULO\").text = \"Objetivo\"
+		get_parent().get_node(\"Control/VBoxContainer/info\").text = \"Desarrollado por Luis Romero, Godot 3.1.\\n@CreyTuning\"
+		get_parent().get_node(\"Control/VBoxContainer/botones_opciones/volver\").text = \"Volver\"
+		get_parent().get_node(\"Control/VBoxContainer/TITULO/lang\").text = \"Esp\"
+	"
+
+[node name="Opciones" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource( 1 )
+
+[node name="background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0.0823529, 0.12549, 0.168627, 1 )
+
+[node name="CPUParticles2D" parent="." instance=ExtResource( 1 )]
+
+[node name="Control" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 30.0
+margin_top = 30.0
+margin_right = -30.0
+margin_bottom = -30.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="TITULO" type="Label" parent="Control/VBoxContainer"]
+margin_right = 420.0
+margin_bottom = 43.0
+size_flags_vertical = 1
+custom_fonts/font = SubResource( 2 )
+custom_colors/font_color = Color( 1, 1, 1, 0.784314 )
+text = "OBJETIVO"
+align = 1
+
+[node name="lang" type="Button" parent="Control/VBoxContainer/TITULO"]
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+margin_left = -68.0
+margin_top = -29.5
+margin_right = 2.0
+margin_bottom = 30.5
+rect_min_size = Vector2( 0, 60 )
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 3 )
+custom_styles/pressed = SubResource( 4 )
+custom_styles/normal = SubResource( 3 )
+custom_fonts/font = SubResource( 5 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+custom_colors/font_color_hover = Color( 0.533333, 0.6, 0.65098, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "Esp"
+
+[node name="HSeparator" type="HSeparator" parent="Control/VBoxContainer"]
+margin_top = 47.0
+margin_right = 420.0
+margin_bottom = 77.0
+rect_min_size = Vector2( 0, 30 )
+custom_styles/separator = SubResource( 6 )
+
+[node name="objetivo" type="Label" parent="Control/VBoxContainer"]
+margin_top = 81.0
+margin_right = 420.0
+margin_bottom = 113.0
+size_flags_horizontal = 3
+size_flags_vertical = 1
+custom_fonts/font = SubResource( 7 )
+custom_colors/font_color = Color( 1, 1, 1, 0.784314 )
+text = "Objetivo por cumplir"
+align = 1
+autowrap = true
+
+[node name="HSeparator2" type="HSeparator" parent="Control/VBoxContainer"]
+margin_top = 117.0
+margin_right = 420.0
+margin_bottom = 147.0
+rect_min_size = Vector2( 0, 30 )
+custom_styles/separator = SubResource( 6 )
+
+[node name="ItemList" type="ItemList" parent="Control/VBoxContainer"]
+margin_top = 151.0
+margin_right = 420.0
+margin_bottom = 413.0
+size_flags_vertical = 3
+custom_styles/cursor = SubResource( 8 )
+custom_styles/selected_focus = SubResource( 9 )
+custom_styles/bg_focus = SubResource( 10 )
+custom_styles/cursor_unfocused = SubResource( 11 )
+custom_styles/selected = SubResource( 12 )
+custom_styles/bg = SubResource( 13 )
+custom_fonts/font = SubResource( 14 )
+custom_colors/guide_color = Color( 0, 0, 0, 0 )
+custom_colors/font_color_selected = Color( 1, 1, 1, 0.784314 )
+custom_colors/font_color = Color( 1, 1, 1, 0.784314 )
+
+[node name="TextureRect" type="TextureRect" parent="Control/VBoxContainer"]
+margin_left = 110.0
+margin_top = 417.0
+margin_right = 310.0
+margin_bottom = 617.0
+rect_min_size = Vector2( 200, 200 )
+size_flags_horizontal = 4
+size_flags_vertical = 0
+texture = ExtResource( 3 )
+expand = true
+stretch_mode = 4
+
+[node name="info" type="Label" parent="Control/VBoxContainer"]
+margin_top = 621.0
+margin_right = 420.0
+margin_bottom = 676.0
+size_flags_vertical = 1
+custom_fonts/font = SubResource( 15 )
+custom_colors/font_color = Color( 1, 1, 1, 0.784314 )
+text = "Desarrollado por Luis Romero, Godot 3.1.
+@CreyTuning"
+align = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/VBoxContainer"]
+margin_top = 680.0
+margin_right = 420.0
+margin_bottom = 730.0
+rect_min_size = Vector2( 0, 50 )
+
+[node name="botones_opciones" type="HBoxContainer" parent="Control/VBoxContainer"]
+margin_top = 734.0
+margin_right = 420.0
+margin_bottom = 794.0
+rect_min_size = Vector2( 0, 40 )
+size_flags_horizontal = 3
+custom_constants/separation = 0
+
+[node name="volver" type="Button" parent="Control/VBoxContainer/botones_opciones"]
+margin_right = 420.0
+margin_bottom = 60.0
+rect_min_size = Vector2( 0, 60 )
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 3 )
+custom_styles/pressed = SubResource( 4 )
+custom_styles/normal = SubResource( 3 )
+custom_fonts/font = SubResource( 5 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+custom_colors/font_color_hover = Color( 0.533333, 0.6, 0.65098, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "VOLVER"
+
+[node name="transition" type="ColorRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0.0823529, 0.12549, 0.168627, 0 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/entrada = SubResource( 16 )
+anims/salida = SubResource( 17 )
+script = SubResource( 18 )
+
+[node name="timeingame" parent="." instance=ExtResource( 4 )]
+
+[node name="language" type="Node" parent="."]
+script = SubResource( 19 )
+
+[connection signal="pressed" from="Control/VBoxContainer/TITULO/lang" to="." method="_on_lang_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/botones_opciones/volver" to="." method="_on_volver_pressed"]

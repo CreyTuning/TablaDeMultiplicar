@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://images/plus_white.png" type="Texture" id=1]
+
+[sub_resource type="Curve" id=1]
+_data = [ Vector2( 0, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.0325308, 0.2096 ), 0.0, 0.0, 0, 0, Vector2( 0.327774, 0.1216 ), -2.39511, 0.0, 0, 0, Vector2( 0.695189, 0.1568 ), -1.73575, 0.0, 0, 0, Vector2( 0.944506, 0.1568 ), -1.67658, -1.67658, 0, 0, Vector2( 1, 0 ), 0.0, 0.0, 0, 0 ]
+
+[node name="CPUParticles2D" type="CPUParticles2D"]
+modulate = Color( 1, 1, 1, 0.0784314 )
+position = Vector2( -165.39, -0.813965 )
+amount = 15
+lifetime = 2.0
+texture = ExtResource( 1 )
+emission_shape = 1
+emission_sphere_radius = 128.0
+gravity = Vector2( 0, 500 )
+initial_velocity = 400.0
+angular_velocity = 100.0
+scale_amount_curve = SubResource( 1 )
+

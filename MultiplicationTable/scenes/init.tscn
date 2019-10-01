@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://resources/timeingame.tscn" type="PackedScene" id=1]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+
+var savedata : Savedata = Savedata.new()
+var objetivos : Objetivos = Objetivos.new()
+var language : Language = Language.new()
+
+func _ready():
+	savedata.load_data()
+	
+	if savedata.endgame:
+		get_tree().change_scene(\"res://scenes/endgame.tscn\")
+	elif savedata.nivel >= 4 and savedata.examen >= 4:
+		get_tree().change_scene(\"res://scenes/welcome_black.tscn\")
+	else:
+		get_tree().change_scene(\"res://scenes/welcome.tscn\")"
+
+[node name="init" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource( 1 )
+
+[node name="tiempo_de_juego" parent="." instance=ExtResource( 1 )]
+

@@ -1,0 +1,433 @@
+[gd_scene load_steps=11 format=2]
+
+[ext_resource path="res://resources/COMIC.TTF" type="DynamicFontData" id=1]
+[ext_resource path="res://resources/font_style.tres" type="DynamicFont" id=2]
+[ext_resource path="res://resources/timeingame.tscn" type="PackedScene" id=3]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+
+var savedata : Savedata = Savedata.new()
+var objetivos : Objetivos = Objetivos.new()
+
+func _ready():
+	$language.apply_language()
+	savedata.load_data()
+	objetivos.check_objetivo()
+	$VBoxContainer/VBoxContainer/Nivel/nivel_valor.text = String(savedata.nivel)
+	$VBoxContainer/GridContainer/r6i.text = String(savedata.r1[0])
+	$VBoxContainer/GridContainer/r7i.text = String(savedata.r2[0])
+	$VBoxContainer/GridContainer/r8i.text = String(savedata.r3[0])
+	$VBoxContainer/GridContainer/r9i.text = String(savedata.r4[0])
+	
+	if savedata.r1[1]:
+		$VBoxContainer/GridContainer/r6c.text = \"OK\"
+	else:
+		$VBoxContainer/GridContainer/r6c.text = \"NO\"
+		
+	if savedata.r2[1]:
+		$VBoxContainer/GridContainer/r7c.text = \"OK\"
+	else:
+		$VBoxContainer/GridContainer/r7c.text = \"NO\"
+	
+	if savedata.r3[1]:
+		$VBoxContainer/GridContainer/r8c.text = \"OK\"
+	else:
+		$VBoxContainer/GridContainer/r8c.text = \"NO\"
+		
+	if savedata.r4[1]:
+		$VBoxContainer/GridContainer/r9c.text = \"OK\"
+	else:
+		$VBoxContainer/GridContainer/r9c.text = \"NO\"
+
+func _notification(what):
+	if what == MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_volver_pressed()
+
+func _on_volver_pressed() -> void:
+	get_tree().change_scene(\"res://scenes/main_menu_black.tscn\")
+
+func _process(delta: float) -> void:
+	pass
+"
+
+[sub_resource type="DynamicFont" id=2]
+size = 30
+font_data = ExtResource( 1 )
+
+[sub_resource type="StyleBoxFlat" id=3]
+bg_color = Color( 0.109804, 0.160784, 0.219608, 1 )
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing = false
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=4]
+bg_color = Color( 0.129412, 0.180392, 0.239216, 1 )
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing_size = 2
+
+[sub_resource type="Animation" id=5]
+length = 0.3
+tracks/0/type = "value"
+tracks/0/path = NodePath("transition:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( -2, 1 ),
+"update": 0,
+"values": [ Color( 0.0823529, 0.12549, 0.168627, 1 ), Color( 0.0823529, 0.12549, 0.168627, 0 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("transition:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("VBoxContainer:rect_position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( -2, 1 ),
+"update": 0,
+"values": [ Vector2( 30, 200 ), Vector2( 30, 30 ) ]
+}
+
+[sub_resource type="GDScript" id=6]
+script/source = "extends AnimationPlayer
+
+func _ready():
+	play(\"init\")
+"
+
+[sub_resource type="GDScript" id=7]
+script/source = "extends Node
+
+var language : Language = Language.new()
+
+func _ready() -> void:
+	language.load_data()
+
+export master func apply_language():
+	language.load_data()
+	
+	if language.language == 'en':
+		get_parent().get_node(\"VBoxContainer/Titulo\").text = \"Status\"
+		get_parent().get_node(\"VBoxContainer/GridContainer/reto\").text = \"Challange\"
+		get_parent().get_node(\"VBoxContainer/GridContainer/fracasos\").text = \"Attempts\"
+		get_parent().get_node(\"VBoxContainer/GridContainer/completado\").text = \"Success\"
+		get_parent().get_node(\"VBoxContainer/volver\").text = \"Back\""
+
+[node name="Estado" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource( 1 )
+
+[node name="ColorRect" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0.0823529, 0.12549, 0.168627, 1 )
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 30.0
+margin_top = 30.0
+margin_right = -30.0
+margin_bottom = -30.0
+
+[node name="Titulo" type="Label" parent="VBoxContainer"]
+margin_right = 420.0
+margin_bottom = 43.0
+size_flags_vertical = 1
+custom_fonts/font = SubResource( 2 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Estado"
+align = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+margin_top = 47.0
+margin_right = 420.0
+margin_bottom = 77.0
+rect_min_size = Vector2( 0, 30 )
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+editor/display_folded = true
+visible = false
+margin_top = 81.0
+margin_right = 420.0
+margin_bottom = 177.0
+custom_constants/separation = 10
+alignment = 1
+
+[node name="Nivel" type="HBoxContainer" parent="VBoxContainer/VBoxContainer"]
+margin_right = 420.0
+margin_bottom = 43.0
+size_flags_horizontal = 3
+custom_constants/separation = 0
+
+[node name="label" type="Label" parent="VBoxContainer/VBoxContainer/Nivel"]
+margin_right = 210.0
+margin_bottom = 43.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Nivel"
+
+[node name="nivel_valor" type="Label" parent="VBoxContainer/VBoxContainer/Nivel"]
+margin_left = 210.0
+margin_right = 420.0
+margin_bottom = 43.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+text = "0"
+
+[node name="Ayudas" type="HBoxContainer" parent="VBoxContainer/VBoxContainer"]
+margin_top = 53.0
+margin_right = 420.0
+margin_bottom = 96.0
+size_flags_horizontal = 3
+custom_constants/separation = 0
+
+[node name="label" type="Label" parent="VBoxContainer/VBoxContainer/Ayudas"]
+margin_right = 210.0
+margin_bottom = 43.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Retos"
+
+[node name="ayudas_valor" type="Label" parent="VBoxContainer/VBoxContainer/Ayudas"]
+margin_left = 210.0
+margin_right = 420.0
+margin_bottom = 43.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+text = "0"
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
+visible = false
+margin_top = 47.0
+margin_right = 420.0
+margin_bottom = 77.0
+rect_min_size = Vector2( 0, 30 )
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer"]
+margin_top = 81.0
+margin_right = 420.0
+margin_bottom = 730.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/vseparation = 10
+custom_constants/hseparation = 10
+columns = 3
+
+[node name="reto" type="Label" parent="VBoxContainer/GridContainer"]
+margin_right = 117.0
+margin_bottom = 43.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Reto"
+align = 1
+
+[node name="fracasos" type="Label" parent="VBoxContainer/GridContainer"]
+margin_left = 127.0
+margin_right = 250.0
+margin_bottom = 43.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Intentos"
+align = 1
+
+[node name="completado" type="Label" parent="VBoxContainer/GridContainer"]
+margin_left = 260.0
+margin_right = 420.0
+margin_bottom = 43.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Completado"
+align = 1
+
+[node name="r6" type="Label" parent="VBoxContainer/GridContainer"]
+margin_top = 53.0
+margin_right = 117.0
+margin_bottom = 96.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "A"
+align = 1
+
+[node name="r6i" type="Label" parent="VBoxContainer/GridContainer"]
+margin_left = 127.0
+margin_top = 53.0
+margin_right = 250.0
+margin_bottom = 96.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+text = "0"
+align = 1
+
+[node name="r6c" type="Label" parent="VBoxContainer/GridContainer"]
+margin_left = 260.0
+margin_top = 53.0
+margin_right = 420.0
+margin_bottom = 96.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+text = "NO"
+align = 1
+
+[node name="r7" type="Label" parent="VBoxContainer/GridContainer"]
+margin_top = 106.0
+margin_right = 117.0
+margin_bottom = 149.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "B"
+align = 1
+
+[node name="r7i" type="Label" parent="VBoxContainer/GridContainer"]
+margin_left = 127.0
+margin_top = 106.0
+margin_right = 250.0
+margin_bottom = 149.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+text = "0"
+align = 1
+
+[node name="r7c" type="Label" parent="VBoxContainer/GridContainer"]
+margin_left = 260.0
+margin_top = 106.0
+margin_right = 420.0
+margin_bottom = 149.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+text = "NO"
+align = 1
+
+[node name="r8" type="Label" parent="VBoxContainer/GridContainer"]
+margin_top = 159.0
+margin_right = 117.0
+margin_bottom = 202.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "C"
+align = 1
+
+[node name="r8i" type="Label" parent="VBoxContainer/GridContainer"]
+margin_left = 127.0
+margin_top = 159.0
+margin_right = 250.0
+margin_bottom = 202.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+text = "0"
+align = 1
+
+[node name="r8c" type="Label" parent="VBoxContainer/GridContainer"]
+margin_left = 260.0
+margin_top = 159.0
+margin_right = 420.0
+margin_bottom = 202.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+text = "NO"
+align = 1
+
+[node name="r9" type="Label" parent="VBoxContainer/GridContainer"]
+margin_top = 212.0
+margin_right = 117.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "D"
+align = 1
+
+[node name="r9i" type="Label" parent="VBoxContainer/GridContainer"]
+margin_left = 127.0
+margin_top = 212.0
+margin_right = 250.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+text = "0"
+align = 1
+
+[node name="r9c" type="Label" parent="VBoxContainer/GridContainer"]
+margin_left = 260.0
+margin_top = 212.0
+margin_right = 420.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+text = "NO"
+align = 1
+
+[node name="volver" type="Button" parent="VBoxContainer"]
+margin_top = 734.0
+margin_right = 420.0
+margin_bottom = 794.0
+rect_min_size = Vector2( 0, 60 )
+focus_mode = 0
+custom_styles/hover = SubResource( 3 )
+custom_styles/pressed = SubResource( 4 )
+custom_styles/normal = SubResource( 3 )
+custom_fonts/font = ExtResource( 2 )
+custom_colors/font_color = Color( 0.533333, 0.6, 0.65098, 1 )
+custom_colors/font_color_hover = Color( 0.533333, 0.6, 0.65098, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "Volver"
+
+[node name="transition" type="ColorRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 1, 1, 1, 0 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/init = SubResource( 5 )
+script = SubResource( 6 )
+
+[node name="tiempo_de_juego" parent="." instance=ExtResource( 3 )]
+
+[node name="language" type="Node" parent="."]
+script = SubResource( 7 )
+
+[connection signal="pressed" from="VBoxContainer/volver" to="." method="_on_volver_pressed"]

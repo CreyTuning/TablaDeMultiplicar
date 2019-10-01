@@ -1,0 +1,40 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Node
+
+signal time_change()
+
+export var dias     : int = 0
+export var horas    : int = 0
+export var minutos  : int = 0
+export var segundos : int = 0
+
+var timeingame : Timeingame = Timeingame.new()
+
+func _ready() -> void:
+	timeingame.load_data()
+	
+	dias     = timeingame.timeingame[0]
+	horas    = timeingame.timeingame[1]
+	minutos  = timeingame.timeingame[2]
+	segundos = timeingame.timeingame[3]
+
+func _on_Timer_timeout() -> void:
+	timeingame.add_second()
+	
+	dias     = timeingame.timeingame[0]
+	horas    = timeingame.timeingame[1]
+	minutos  = timeingame.timeingame[2]
+	segundos = timeingame.timeingame[3]
+	
+	emit_signal(\"time_change\")
+	"
+
+[node name="timeingame" type="Node"]
+script = SubResource( 1 )
+
+[node name="Timer" type="Timer" parent="."]
+autostart = true
+
+[connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]

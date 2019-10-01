@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/[CLOCK_FAST].ogg-d89920199982cb7fdb137359af7fd0a8.oggstr"
+
+[deps]
+
+source_file="res://sounds_ogg/[CLOCK_FAST].ogg"
+dest_files=[ "res://.import/[CLOCK_FAST].ogg-d89920199982cb7fdb137359af7fd0a8.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

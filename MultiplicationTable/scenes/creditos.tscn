@@ -1,0 +1,249 @@
+[gd_scene load_steps=15 format=2]
+
+[ext_resource path="res://resources/Panel-colores.tscn" type="PackedScene" id=1]
+[ext_resource path="res://resources/COMIC.TTF" type="DynamicFontData" id=2]
+[ext_resource path="res://images/log5.png" type="Texture" id=3]
+[ext_resource path="res://images/logo.png" type="Texture" id=4]
+[ext_resource path="res://images/gdt_cuted.png" type="Texture" id=5]
+[ext_resource path="res://sounds_ogg/[Plus].ogg" type="AudioStream" id=6]
+[ext_resource path="res://sounds_ogg/Game Sound Better 19-06-06_12.25.ogg" type="AudioStream" id=7]
+[ext_resource path="res://resources/timeingame.tscn" type="PackedScene" id=8]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+
+var savedata:Savedata = Savedata.new()
+
+func _ready():
+	$language.apply_language()
+	$AnimationPlayer.play(\"subiendo\")
+
+func _input(event):
+	if event is InputEventScreenTouch and event.pressed:
+		$plus.play()
+		for x in range(3):
+			var plus = preload(\"res://animations/Plus.tscn\").instance()
+			plus.position.x = event.position.x + rand_range(-100, 100)
+			plus.position.y = event.position.y + rand_range(-100, 100)
+			plus.z_index = 500
+			add_child(plus)
+			yield(get_tree().create_timer(0.1), 'timeout')
+
+
+func _on_AnimationPlayer_animation_finished(anim_name: String) -> void:
+	savedata.load_data()
+	savedata.endgame = true
+	savedata.save_data()
+	get_tree().change_scene(\"res://scenes/endgame.tscn\")
+
+
+func _on_AnimationPlayer_animation_started(anim_name: String) -> void:
+	if anim_name == \"subiendo\":
+		$sound_better.play()
+"
+
+[sub_resource type="DynamicFont" id=2]
+size = 60
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxEmpty" id=3]
+
+[sub_resource type="DynamicFont" id=4]
+size = 30
+font_data = ExtResource( 2 )
+
+[sub_resource type="Animation" id=5]
+length = 67.0
+tracks/0/type = "value"
+tracks/0/path = NodePath("Creditos:rect_position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 67 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Vector2( 0, 860 ), Vector2( 0, -2280 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("ColorRect:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 1.2, 63 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ true, false, true ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("ColorRect:color")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 1.2, 63, 65 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ) ]
+}
+
+[sub_resource type="GDScript" id=6]
+script/source = "extends Node
+
+var language : Language = Language.new()
+
+func _ready() -> void:
+	language.load_data()
+
+export master func apply_language():
+	language.load_data()
+	
+	if language.language == 'en':
+		get_parent().get_node(\"Creditos/gracias_por_jugar\").text = \"Thanks for playing!\"
+		get_parent().get_node(\"Creditos/section_1\").text = \"Original idea\\nLuis Romero\\n\\nDevelopment and production\\nLuis Romero\\n\\nMusic and sounds\\nLuis Romero (CreyTuning)\\n\\nLevel desing\\nLuis Romero\\n\\nInitial idea challenge C and D\\nLeonardo Manrique\\n(@lmanrique_08f)\\n\\nTest manager\\nLeonardo Manrique\\n(@lmanrique_08f)\"
+		get_parent().get_node(\"Creditos/agradeciminetos\").text = \"Special thanks to\\n\\nMy mother (Fabiola Romero)\\nMy sister (Fabianny Méndez)\\nMy grandfather (Gaspar Romero)\\nMy cousin (Gianna Hidalgo)\\n\\n\\n\\n\\n\\n\\n\\nGodot Engine v3.1\""
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource( 1 )
+
+[node name="Panel" parent="." instance=ExtResource( 1 )]
+
+[node name="Creditos" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = -2205.01
+margin_bottom = -233.015
+
+[node name="gracias_por_jugar" type="Label" parent="Creditos"]
+margin_right = 480.0
+margin_bottom = 173.0
+custom_fonts/font = SubResource( 2 )
+text = "Gracias por Jugar!"
+align = 1
+autowrap = true
+
+[node name="HSeparator" type="HSeparator" parent="Creditos"]
+margin_top = 177.0
+margin_right = 480.0
+margin_bottom = 427.0
+rect_min_size = Vector2( 0, 250 )
+custom_styles/separator = SubResource( 3 )
+
+[node name="TextureRect" type="TextureRect" parent="Creditos"]
+margin_top = 431.0
+margin_right = 480.0
+margin_bottom = 581.0
+texture = ExtResource( 3 )
+stretch_mode = 4
+
+[node name="HSeparator2" type="HSeparator" parent="Creditos"]
+margin_top = 585.0
+margin_right = 480.0
+margin_bottom = 635.0
+rect_min_size = Vector2( 0, 50 )
+custom_styles/separator = SubResource( 3 )
+
+[node name="section_1" type="Label" parent="Creditos"]
+margin_top = 639.0
+margin_right = 480.0
+margin_bottom = 1510.0
+custom_fonts/font = SubResource( 4 )
+text = "Idea Original
+Luis Romero
+
+Desarrollo y Producción
+Luis Romero
+
+Música y Sonidos
+Luis Romero (CreyTuning)
+
+Diseño de niveles
+Luis Romero
+
+Idea inicial RETO C y D
+Leonardo Manrique
+(@lmanrique_08f)
+
+Encargado de pruebas
+Leonardo Manrique
+(@lmanrique_08f)"
+align = 1
+autowrap = true
+
+[node name="HSeparator3" type="HSeparator" parent="Creditos"]
+margin_top = 1514.0
+margin_right = 480.0
+margin_bottom = 1714.0
+rect_min_size = Vector2( 0, 200 )
+custom_styles/separator = SubResource( 3 )
+
+[node name="TextureRect2" type="TextureRect" parent="Creditos"]
+margin_top = 1718.0
+margin_right = 480.0
+margin_bottom = 1818.0
+texture = ExtResource( 4 )
+stretch_mode = 4
+
+[node name="HSeparator4" type="HSeparator" parent="Creditos"]
+margin_top = 1822.0
+margin_right = 480.0
+margin_bottom = 1872.0
+rect_min_size = Vector2( 0, 50 )
+custom_styles/separator = SubResource( 3 )
+
+[node name="agradeciminetos" type="Label" parent="Creditos"]
+margin_top = 1876.0
+margin_right = 480.0
+margin_bottom = 2563.0
+custom_fonts/font = SubResource( 4 )
+text = "Agradecimientos a
+
+Mi madre (Fabiola Romero)
+Mi hermana (Fabianny Méndez)
+Mi abuelo (Gaspar Romero)
+Mi prima (Gianna Hidalgo)
+
+
+
+
+
+
+
+Godot Engine v3.1
+"
+align = 1
+autowrap = true
+
+[node name="TextureRect3" type="TextureRect" parent="Creditos"]
+margin_top = 2567.0
+margin_right = 480.0
+margin_bottom = 2826.0
+texture = ExtResource( 5 )
+stretch_mode = 6
+
+[node name="plus" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 6 )
+
+[node name="sound_better" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 7 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/subiendo = SubResource( 5 )
+
+[node name="ColorRect" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="tiempo_de_juego" parent="." instance=ExtResource( 8 )]
+
+[node name="language" type="Node" parent="."]
+script = SubResource( 6 )
+
+[connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_finished"]
+[connection signal="animation_started" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_started"]

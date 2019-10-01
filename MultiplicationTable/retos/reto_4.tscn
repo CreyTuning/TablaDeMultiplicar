@@ -1,0 +1,730 @@
+[gd_scene load_steps=36 format=2]
+
+[ext_resource path="res://retos/images/0.png" type="Texture" id=1]
+[ext_resource path="res://resources/COMIC.TTF" type="DynamicFontData" id=2]
+[ext_resource path="res://sounds_ogg/[Button Tap].ogg" type="AudioStream" id=3]
+[ext_resource path="res://resources/CONSOLA.TTF" type="DynamicFontData" id=4]
+[ext_resource path="res://sounds_ogg/[Plus].ogg" type="AudioStream" id=5]
+[ext_resource path="res://sounds_ogg/[Victoria].ogg" type="AudioStream" id=6]
+[ext_resource path="res://sounds_ogg/[ERROR].ogg" type="AudioStream" id=7]
+[ext_resource path="res://sounds_ogg/[S-CLOCK_1].ogg" type="AudioStream" id=8]
+[ext_resource path="res://sounds_ogg/[S-CLOCK_2].ogg" type="AudioStream" id=9]
+[ext_resource path="res://examenes/pics/pause.png" type="Texture" id=10]
+[ext_resource path="res://resources/timeingame.tscn" type="PackedScene" id=11]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+
+var savedata : Savedata = Savedata.new()
+var objetivos : Objetivos = Objetivos.new()
+
+var _operations_ = ['+', '-']
+var _types_ = ['factorial', 'int']
+
+var result : int = 0
+var respuesta : bool = false
+var tipos = []
+var signos = []
+var values = []
+var used = []
+
+var button_1_text = ''
+var button_2_text = ''
+
+func _notification(what):
+	if what == MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST:
+		add_child(preload(\"res://animations/alerta_noSePuedeAbandonar.tscn\").instance())
+
+func _ready() -> void:
+	$language.apply_language()
+	randomize()
+	update_values()
+
+func _process(delta: float) -> void:
+	pass
+
+
+func update_values():
+	while true:
+		tipos = [_types_[randi() % 2], _types_[randi() % 2], _types_[randi() % 2]]
+		signos = [_operations_[randi() % 2], _operations_[randi() % 2]]
+		values = []
+		
+		# Agreagar _types_ de datos
+		for x in tipos:
+			if x == 'factorial':
+				values.append(Factorial.new())
+			elif x == 'int':
+				values.append(0)
+		
+		# Cargar valores
+		for x in range(3):
+			if values[x] is Factorial:
+				values[x].set_factorial(randi() % 5)
+			else:
+				values[x] = randi() % 82
+			
+		# ASSING RESULT
+		if values[0] is Factorial:
+			result = values[0].to_int
+		else:
+			result = values[0]
+		
+		for x in range(1, 3):
+			if signos[x - 1] == '+':
+				if values[x] is Factorial:
+					result += values[x].to_int
+				else:
+					result += values[x]
+			elif signos[x - 1] == '-':
+				if values[x] is Factorial:
+					result -= values[x].to_int
+				else:
+					result -= values[x]
+					
+		# BREAK LOOP
+		if [values[0], signos[0], values[1], signos[1], values[2]] in used:
+			continue
+		elif result < 0 or result > 100:
+			continue
+		elif not values[0] is Factorial and not values[1] is Factorial and not values[2] is Factorial:
+			continue
+		else:
+			used.append([values[0], signos[0], values[1], signos[1], values[2]])
+			print(values, signos, result)
+			break
+	
+	# Actualizar resultados a mostar en botones
+	if values[0] is Factorial:
+		button_1_text = values[0].to_str
+		
+		while true:
+			var temp = values[0].fac + ((randi() % 3) - 1)
+			if temp >= 0 and temp != values[0].fac and temp < 5:
+				button_2_text = String(temp) + '!'
+				break
+	else:
+		button_1_text = String(values[0])
+		button_2_text = String(values[0] + (randi() % 20))
+	
+	for x in range(1, 3):
+		if signos[x - 1] == '+':
+			if values[x] is Factorial:
+				button_1_text +=  ' + ' + values[x].to_str
+				
+				while true:
+					var temp = values[x].fac + ((randi() % 3) - 1)
+					if temp >= 0 and temp != values[x].fac and temp < 5:
+						button_2_text +=  ' ' +_operations_[randi() % 2] + ' ' + String(temp) + '!'
+						break
+			else:
+				button_1_text +=  ' + ' + String(values[x])
+				button_2_text +=  ' ' + _operations_[randi() % 2] + ' ' + String(values[x] + (randi() % 20))
+		elif signos[x - 1] == '-':
+			if values[x] is Factorial:
+				button_1_text +=  ' - ' + values[x].to_str
+				
+				while true:
+					var temp = values[x].fac + ((randi() % 3) - 1)
+					if temp >= 0 and temp != values[x].fac and temp < 5:
+						button_2_text +=  ' ' + _operations_[randi() % 2] + ' ' + String(temp)  + '!'
+						break
+			else:
+				button_1_text +=  ' - ' + String(values[x])
+				button_2_text +=  ' ' + _operations_[randi() % 2] + ' ' + String(values[x] + (randi() % 20))
+	
+	# Update gui
+	if randi() % 2 == 1:
+		$Control/VBoxContainer/teclado/true_b.text = button_1_text
+		$Control/VBoxContainer/teclado/false_b.text = button_2_text
+		respuesta = true
+	else:
+		$Control/VBoxContainer/teclado/true_b.text = button_2_text
+		$Control/VBoxContainer/teclado/false_b.text = button_1_text
+		respuesta = false
+		
+	$Control/VBoxContainer/result.text = String(result)
+	print(respuesta)
+
+
+func fallaste() -> void:
+		$TextureProgress/Timer.stop()
+		$Control/VBoxContainer/result.text = ''
+
+		$Control/VBoxContainer/teclado/true_b.disabled = true
+		$Control/VBoxContainer/teclado/false_b.disabled = true
+
+		$error.play()
+		$AnimationPlayer.play(\"fallaste\")
+		savedata.load_data()
+		savedata.r4[0] += 1
+		savedata.save_data()
+		yield(get_tree().create_timer(4), 'timeout')
+		get_tree().change_scene(\"res://scenes/main_menu_black.tscn\")
+
+
+func _on_TextureProgress_value_changed(value: float) -> void:
+	if value == 0:
+		fallaste()
+
+#
+func verificar_respuesta(respuesta_pressed : bool):
+	
+	if respuesta == respuesta_pressed:
+		if used.size() >= 20:
+			$TextureProgress/Timer.stop()
+			$Control/VBoxContainer/result.text = '.'
+
+			$Control/VBoxContainer/teclado/true_b.disabled = true
+			$Control/VBoxContainer/teclado/false_b.disabled = true
+			$TextureProgress/Timer.stop()
+
+			$victoria_sound.play()
+			$AnimationPlayer.play('victoria')
+			savedata.load_data()
+			savedata.r4[1] = true
+			savedata.nivel += 1
+			savedata.save_data()
+			objetivos.check_objetivo()
+			yield(get_tree().create_timer(4), 'timeout')
+			get_tree().change_scene('res://scenes/main_menu_black.tscn')
+		else:
+			update_values()
+
+		# Timer to double speed
+		if used.size() >= 15:
+			$TextureProgress.max_value = 14
+			$TextureProgress/Timer.wait_time = 0.5
+
+		#Update components
+		$TextureProgress.value = $TextureProgress.max_value
+		$TextureProgress/Timer.start()
+
+		#Animation
+		for x in range(3):
+			$plus.play()
+			var plus = preload(\"res://animations/Plus.tscn\").instance()
+			plus.position.x = get_viewport_rect().size.x / rand_range(1.5, 3)
+			plus.position.y = get_viewport_rect().size.y / rand_range(1.5, 3)
+			plus.z_index = 500
+			add_child(plus)
+			yield(get_tree().create_timer(0.1), 'timeout')
+
+	else:
+		fallaste()
+
+
+func _on_true_pressed():
+	verificar_respuesta(true)
+
+
+func _on_false_pressed():
+	verificar_respuesta(false)
+"
+
+[sub_resource type="Curve" id=2]
+_data = [ Vector2( 0, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.371301, 1 ), 0.0, 0.0, 0, 0, Vector2( 0.749453, 1 ), -0.0539476, -0.0539476, 0, 0, Vector2( 1, 0 ), -9.06362, 0.0, 0, 0 ]
+
+[sub_resource type="GDScript" id=3]
+script/source = "extends CPUParticles2D
+
+func _on_background_resized():
+	position.x = get_viewport_rect().size.x / 2
+	position.y = get_viewport_rect().size.y / 2"
+
+[sub_resource type="Gradient" id=4]
+offsets = PoolRealArray( 1 )
+colors = PoolColorArray( 0.92549, 0.937255, 0.945098, 1 )
+
+[sub_resource type="GradientTexture" id=5]
+gradient = SubResource( 4 )
+
+[sub_resource type="GDScript" id=6]
+script/source = "extends TextureProgress
+
+var switch_clock : bool = false
+
+func _on_Timer_timeout() -> void:
+	value -= 1
+	switch_clock = !switch_clock
+	
+	if switch_clock:
+		$\"../clock1\".play()
+	else:
+		$\"../clock2\".play()
+
+func _on_AnimationPlayer_animation_finished(anim_name):
+	if anim_name == \"entrada\":
+		$Timer.start()
+"
+
+[sub_resource type="DynamicFont" id=7]
+size = 100
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxFlat" id=8]
+bg_color = Color( 1, 1, 1, 1 )
+corner_radius_top_left = 50
+corner_radius_top_right = 50
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=9]
+bg_color = Color( 0.0901961, 0.627451, 0.364706, 1 )
+corner_radius_top_left = 50
+corner_radius_top_right = 50
+
+[sub_resource type="DynamicFont" id=10]
+size = 60
+font_data = ExtResource( 2 )
+
+[sub_resource type="GDScript" id=11]
+script/source = "extends Button
+
+func _ready() -> void:
+	pass
+	
+func pressed() -> void:
+	get_parent().get_node(\"tap_sound\").play()"
+
+[sub_resource type="StyleBoxFlat" id=12]
+bg_color = Color( 1, 1, 1, 1 )
+corner_radius_bottom_right = 50
+corner_radius_bottom_left = 50
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=13]
+bg_color = Color( 1, 0.313726, 0.313726, 1 )
+corner_radius_bottom_right = 50
+corner_radius_bottom_left = 50
+
+[sub_resource type="GDScript" id=14]
+script/source = "extends Button
+
+func _ready() -> void:
+	pass
+
+func pressed() -> void:
+	get_parent().get_node(\"tap_sound\").play()"
+
+[sub_resource type="GDScript" id=15]
+script/source = "extends ColorRect
+
+func _input(event):
+	if visible == true:
+		if event is InputEventScreenTouch and event.pressed:
+			get_parent().get_node(\"AnimationPlayer\").stop(false)
+			get_parent().get_node(\"pause\").visible = true
+		elif event is InputEventScreenTouch and not event.pressed:
+			get_parent().get_node(\"AnimationPlayer\").play(\"entrada\")
+			get_parent().get_node(\"pause\").visible = false
+"
+
+[sub_resource type="DynamicFont" id=16]
+size = 35
+font_data = ExtResource( 4 )
+
+[sub_resource type="DynamicFont" id=17]
+size = 40
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=18]
+size = 50
+font_data = ExtResource( 2 )
+
+[sub_resource type="Animation" id=19]
+length = 3.5
+tracks/0/type = "value"
+tracks/0/path = NodePath("transition:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5, 3, 3.5 ),
+"transitions": PoolRealArray( -2, 1, 2, 1 ),
+"update": 0,
+"values": [ Color( 0.0823529, 0.12549, 0.168627, 1 ), Color( 0.2, 0.411765, 0.117647, 1 ), Color( 0.2, 0.411765, 0.117647, 1 ), Color( 0.2, 0.411765, 0.117647, 0 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("transition:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 3.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("TituloEntrada:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.5, 3, 3.5 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("TituloEntrada:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 0, 3.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+
+[sub_resource type="Animation" id=20]
+tracks/0/type = "value"
+tracks/0/path = NodePath("fallaste:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ true ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("fallaste:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( -2, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ) ]
+}
+
+[sub_resource type="Animation" id=21]
+length = 0.5
+
+[sub_resource type="Animation" id=22]
+tracks/0/type = "value"
+tracks/0/path = NodePath("victoria:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.4 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("victoria:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ true ]
+}
+
+[sub_resource type="GDScript" id=23]
+script/source = "extends AnimationPlayer
+
+func _ready() -> void:
+	play(\"entrada\")"
+
+[sub_resource type="GDScript" id=24]
+script/source = "extends Node
+
+var language : Language = Language.new()
+
+func _ready() -> void:
+	language.load_data()
+
+export master func apply_language():
+	language.load_data()
+	
+	if language.language == 'en':
+		get_parent().get_node(\"victoria/Label\").text = \"Successfully\"
+		get_parent().get_node(\"fallaste/Label\").text = \"Failed\""
+
+[node name="Reto_4" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 6.10352e-005
+script = SubResource( 1 )
+
+[node name="background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0.2, 0.411765, 0.117647, 1 )
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="background"]
+modulate = Color( 0, 0, 0, 0.0392157 )
+position = Vector2( 240, 427 )
+amount = 15
+lifetime = 3.0
+explosiveness = 0.35
+texture = ExtResource( 1 )
+emission_shape = 1
+emission_sphere_radius = 128.0
+spread = 180.0
+gravity = Vector2( 0, 0 )
+initial_velocity = 120.0
+initial_velocity_random = 1.0
+angular_velocity = 300.0
+radial_accel = 30.0
+scale_amount = 0.8
+scale_amount_curve = SubResource( 2 )
+script = SubResource( 3 )
+
+[node name="TextureProgress" type="TextureProgress" parent="."]
+anchor_right = 1.0
+margin_right = -6.10352e-005
+margin_bottom = 10.0
+rect_min_size = Vector2( 0, 10 )
+size_flags_horizontal = 3
+size_flags_vertical = 3
+max_value = 5.0
+value = 5.0
+texture_progress = SubResource( 5 )
+nine_patch_stretch = true
+script = SubResource( 6 )
+
+[node name="Timer" type="Timer" parent="TextureProgress"]
+wait_time = 1.1
+
+[node name="Control" type="Control" parent="."]
+modulate = Color( 1, 1, 1, 0.941176 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 30.9454
+margin_top = 30.0
+margin_right = -29.0546
+margin_bottom = -30.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/separation = 20
+
+[node name="result" type="Label" parent="Control/VBoxContainer"]
+margin_right = 420.0
+margin_bottom = 574.0
+size_flags_vertical = 7
+custom_fonts/font = SubResource( 7 )
+custom_colors/font_color = Color( 0.92549, 0.937255, 0.945098, 1 )
+text = "20"
+align = 1
+valign = 1
+
+[node name="teclado" type="GridContainer" parent="Control/VBoxContainer"]
+margin_top = 594.0
+margin_right = 420.0
+margin_bottom = 794.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.0
+custom_constants/vseparation = 0
+custom_constants/hseparation = 0
+
+[node name="true_b" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_right = 420.0
+margin_bottom = 100.0
+rect_min_size = Vector2( 0, 100 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 8 )
+custom_styles/pressed = SubResource( 9 )
+custom_styles/disabled = SubResource( 8 )
+custom_styles/normal = SubResource( 8 )
+custom_fonts/font = SubResource( 10 )
+custom_colors/font_color_disabled = Color( 0.14902, 0.196078, 0.219608, 0.427451 )
+custom_colors/font_color = Color( 0.0901961, 0.627451, 0.364706, 1 )
+custom_colors/font_color_hover = Color( 0.0901961, 0.627451, 0.364706, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "2! + 12 - 5!"
+script = SubResource( 11 )
+
+[node name="false_b" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_top = 100.0
+margin_right = 420.0
+margin_bottom = 200.0
+rect_min_size = Vector2( 0, 100 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 12 )
+custom_styles/pressed = SubResource( 13 )
+custom_styles/disabled = SubResource( 12 )
+custom_styles/normal = SubResource( 12 )
+custom_fonts/font = SubResource( 10 )
+custom_colors/font_color_disabled = Color( 0.14902, 0.196078, 0.219608, 0.427451 )
+custom_colors/font_color = Color( 1, 0.313726, 0.313726, 1 )
+custom_colors/font_color_hover = Color( 1, 0.313726, 0.313726, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "8! - 4! - 4"
+script = SubResource( 14 )
+
+[node name="tap_sound" type="AudioStreamPlayer" parent="Control/VBoxContainer/teclado"]
+stream = ExtResource( 3 )
+volume_db = -15.0
+
+[node name="transition" type="ColorRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0.2, 0.411765, 0.117647, 0 )
+script = SubResource( 15 )
+
+[node name="TituloEntrada" type="HBoxContainer" parent="."]
+visible = false
+modulate = Color( 1, 1, 1, 0 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 30.0
+margin_top = 30.0
+margin_right = -30.0
+margin_bottom = -30.0
+alignment = 1
+
+[node name="TituloEntrada1" type="Label" parent="TituloEntrada"]
+visible = false
+margin_top = 341.0
+margin_right = 420.0
+margin_bottom = 490.0
+custom_fonts/font = SubResource( 16 )
+custom_colors/font_color = Color( 0.92549, 0.937255, 0.945098, 1 )
+text = "Multiplicación de signos
+
+"
+align = 1
+valign = 1
+autowrap = true
+
+[node name="TituloEntrada2" type="Label" parent="TituloEntrada"]
+margin_left = 118.0
+margin_top = 218.0
+margin_right = 302.0
+margin_bottom = 575.0
+size_flags_horizontal = 5
+custom_fonts/font = SubResource( 17 )
+custom_colors/font_color = Color( 0.92549, 0.937255, 0.945098, 1 )
+text = "0! = 1
+1! = 1 x 0!
+2! = 2 x 1!
+3! = 3 x 2!
+4! = 4 x 3!
+..."
+valign = 1
+
+[node name="fallaste" type="Control" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="transition2" type="ColorRect" parent="fallaste"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 1, 0.313726, 0.313726, 1 )
+
+[node name="Label" type="Label" parent="fallaste"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_fonts/font = SubResource( 18 )
+text = "Fallaste"
+align = 1
+valign = 1
+
+[node name="victoria" type="Control" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="transition2" type="ColorRect" parent="victoria"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0.0901961, 0.627451, 0.364706, 1 )
+
+[node name="Label" type="Label" parent="victoria"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_fonts/font = SubResource( 18 )
+text = "Victoria"
+align = 1
+valign = 1
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/entrada = SubResource( 19 )
+anims/fallaste = SubResource( 20 )
+anims/salida = SubResource( 21 )
+anims/victoria = SubResource( 22 )
+script = SubResource( 23 )
+
+[node name="plus" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 5 )
+volume_db = -10.0
+bus = "Plus"
+
+[node name="victoria_sound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 6 )
+volume_db = -10.0
+bus = "Error"
+
+[node name="error" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 7 )
+volume_db = -15.0
+bus = "Error"
+
+[node name="clock1" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 8 )
+volume_db = -15.0
+
+[node name="clock2" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 9 )
+volume_db = -15.0
+
+[node name="pause" type="TextureRect" parent="."]
+visible = false
+margin_left = 30.0
+margin_top = 30.0
+margin_right = 84.0
+margin_bottom = 100.0
+texture = ExtResource( 10 )
+expand = true
+stretch_mode = 1
+
+[node name="timeingame" parent="." instance=ExtResource( 11 )]
+
+[node name="language" type="Node" parent="."]
+script = SubResource( 24 )
+
+[node name="tap" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 3 )
+volume_db = -15.0
+
+[connection signal="resized" from="background" to="background/CPUParticles2D" method="_on_background_resized"]
+[connection signal="value_changed" from="TextureProgress" to="." method="_on_TextureProgress_value_changed"]
+[connection signal="timeout" from="TextureProgress/Timer" to="TextureProgress" method="_on_Timer_timeout"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/true_b" to="." method="_on_true_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/false_b" to="." method="_on_false_pressed"]
+[connection signal="animation_finished" from="AnimationPlayer" to="TextureProgress" method="_on_AnimationPlayer_animation_finished"]

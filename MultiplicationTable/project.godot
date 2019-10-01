@@ -1,0 +1,87 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "Reference",
+"class": "Factorial",
+"language": "GDScript",
+"path": "res://retos/scripts/Factorial.gd"
+}, {
+"base": "Reference",
+"class": "Language",
+"language": "GDScript",
+"path": "res://scripts/Language.gd"
+}, {
+"base": "Reference",
+"class": "Multiplicando",
+"language": "GDScript",
+"path": "res://scripts/Multiplicando.gd"
+}, {
+"base": "Reference",
+"class": "Objetivos",
+"language": "GDScript",
+"path": "res://scripts/Objetivos.gd"
+}, {
+"base": "Reference",
+"class": "Savedata",
+"language": "GDScript",
+"path": "res://scripts/Savedata.gd"
+}, {
+"base": "Reference",
+"class": "Timeingame",
+"language": "GDScript",
+"path": "res://scripts/Timeingame.gd"
+} ]
+_global_script_class_icons={
+"Factorial": "",
+"Language": "",
+"Multiplicando": "",
+"Objetivos": "",
+"Savedata": "",
+"Timeingame": ""
+}
+
+[application]
+
+config/name="Tabla de Multiplicar"
+run/main_scene="res://scenes/init.tscn"
+boot_splash/image="res://images/splash_white.png"
+boot_splash/bg_color=Color( 1, 1, 1, 1 )
+config/icon="res://icons/72.png"
+config/quit_on_go_back=false
+
+[display]
+
+window/size/width=480
+window/size/height=854
+window/vsync/use_vsync=false
+window/energy_saving/keep_screen_on=false
+window/handheld/orientation="portrait"
+window/stretch/mode="2d"
+window/stretch/aspect="expand"
+
+[input]
+
+click={
+"deadzone": 0.5,
+"events": [ Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"button_mask":0,"position":Vector2( 0, 0 ),"global_position":Vector2( 0, 0 ),"factor":1.0,"button_index":1,"pressed":false,"doubleclick":false,"script":null)
+ ]
+}
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+
+quality/driver/driver_name="GLES2"
+vram_compression/import_etc=true
+vram_compression/import_etc2=false
+environment/default_environment="res://default_env.tres"

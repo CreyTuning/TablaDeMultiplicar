@@ -1,0 +1,533 @@
+[gd_scene load_steps=24 format=2]
+
+[ext_resource path="res://images/logo.png" type="Texture" id=1]
+[ext_resource path="res://images/logo_pressed.png" type="Texture" id=2]
+[ext_resource path="res://images/plus.png" type="Texture" id=3]
+[ext_resource path="res://resources/font_style.tres" type="DynamicFont" id=4]
+[ext_resource path="res://resources/COMIC.TTF" type="DynamicFontData" id=5]
+[ext_resource path="res://resources/button_tool.tres" type="StyleBox" id=6]
+[ext_resource path="res://images/tool_icon.png" type="Texture" id=7]
+[ext_resource path="res://resources/timeingame.tscn" type="PackedScene" id=8]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+
+var savedata = Savedata.new()
+
+func _ready() -> void:
+	$language.apply_language()
+	$AnimationPlayer.play(\"init\")
+	savedata.load_data()
+	$VBoxContainer/header/estadisticas_button/HBoxContainer/nivel/valor.text = String(savedata.nivel)
+	
+	if savedata.r1[1]:
+		get_node(\"VBoxContainer/tablas/6\").disabled = true
+		$VBoxContainer/header/estadisticas_button/HBoxContainer/puntos/valor.text = String(int($VBoxContainer/header/estadisticas_button/HBoxContainer/puntos/valor.text) + 1)
+	if savedata.r2[1]:
+		get_node(\"VBoxContainer/tablas/7\").disabled = true
+		$VBoxContainer/header/estadisticas_button/HBoxContainer/puntos/valor.text = String(int($VBoxContainer/header/estadisticas_button/HBoxContainer/puntos/valor.text) + 1)
+	if savedata.r3[1]:
+		$VBoxContainer/header/estadisticas_button/HBoxContainer/puntos/valor.text = String(int($VBoxContainer/header/estadisticas_button/HBoxContainer/puntos/valor.text) + 1)
+		get_node(\"VBoxContainer/tablas/8\").disabled = true
+	if savedata.r4[1]:
+		$VBoxContainer/header/estadisticas_button/HBoxContainer/puntos/valor.text = String(int($VBoxContainer/header/estadisticas_button/HBoxContainer/puntos/valor.text) + 1)
+		get_node(\"VBoxContainer/tablas/9\").disabled = true
+
+func _notification(what):
+	if what == MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST:
+		get_tree().quit()
+
+
+func _on_Button_pressed() -> void:
+	get_tree().change_scene(\"res://scenes/objetivo_black.tscn\")
+
+
+func _on_6_pressed() -> void:
+	get_tree().change_scene(\"res://retos/reto_1.tscn\")
+
+
+func _on_7_pressed() -> void:
+	get_tree().change_scene(\"res://retos/reto_2.tscn\")
+
+
+func _on_8_pressed() -> void:
+	get_tree().change_scene(\"res://retos/reto_3.tscn\")
+
+
+func _on_9_pressed() -> void:
+	get_tree().change_scene(\"res://retos/reto_4.tscn\")
+
+
+func _on_estadisticas_button_pressed() -> void:
+	get_tree().change_scene(\"res://scenes/estado_black.tscn\")
+"
+
+[sub_resource type="GDScript" id=2]
+script/source = "extends TextureButton
+
+var savedata : Savedata = Savedata.new()
+var objetivos : Objetivos = Objetivos.new()
+
+func _ready():
+	objetivos.check_objetivo()
+	savedata.load_data()
+	
+	if objetivos.puede_evaluar:
+		$particles.emitting = true
+		$particles.position.x = get_parent().rect_size.x / 2
+
+func _pressed() -> void:
+	objetivos.check_objetivo()
+	savedata.load_data()
+	
+	if objetivos.puede_evaluar:
+		get_tree().change_scene(\"res://retos/reto_final.tscn\")
+
+func _on_logo_button_resized():
+	$particles.position.x = rect_size.x / 2
+"
+
+[sub_resource type="Curve" id=3]
+_data = [ Vector2( 0, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.633813, 0.544 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="StyleBoxEmpty" id=4]
+
+[sub_resource type="StyleBoxFlat" id=5]
+bg_color = Color( 0.129412, 0.180392, 0.239216, 1 )
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxEmpty" id=6]
+
+[sub_resource type="StyleBoxFlat" id=7]
+bg_color = Color( 0.109804, 0.160784, 0.219608, 1 )
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=8]
+bg_color = Color( 0.113725, 0.631373, 0.94902, 1 )
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=9]
+bg_color = Color( 0.109804, 0.160784, 0.219608, 0.392157 )
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=10]
+bg_color = Color( 0.109804, 0.160784, 0.219608, 1 )
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing = false
+anti_aliasing_size = 2
+
+[sub_resource type="DynamicFont" id=11]
+size = 50
+font_data = ExtResource( 5 )
+
+[sub_resource type="StyleBoxFlat" id=12]
+bg_color = Color( 0.203922, 0.666667, 0.94902, 1 )
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+anti_aliasing_size = 2
+
+[sub_resource type="DynamicFont" id=13]
+size = 25
+font_data = ExtResource( 5 )
+
+[sub_resource type="Animation" id=14]
+length = 0.3
+tracks/0/type = "value"
+tracks/0/path = NodePath("transition:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2 ),
+"transitions": PoolRealArray( 2, 1 ),
+"update": 0,
+"values": [ Color( 0.0823529, 0.12549, 0.168627, 1 ), Color( 0.0823529, 0.12549, 0.168627, 0 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("transition:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("VBoxContainer:margin_top")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( -2, 1 ),
+"update": 0,
+"values": [ 80.0, 30.0 ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("VBoxContainer:margin_bottom")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( -2, 1 ),
+"update": 0,
+"values": [ -80.0, -30.0 ]
+}
+tracks/4/type = "value"
+tracks/4/path = NodePath("VBoxContainer:margin_left")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( -2, 1 ),
+"update": 0,
+"values": [ 80.0, 30.0 ]
+}
+tracks/5/type = "value"
+tracks/5/path = NodePath("VBoxContainer:margin_right")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( -2, 1 ),
+"update": 0,
+"values": [ -80.0, -30.0 ]
+}
+
+[sub_resource type="GDScript" id=15]
+script/source = "extends Node
+
+var language : Language = Language.new()
+
+func _ready() -> void:
+	language.load_data()
+
+export master func apply_language():
+	language.load_data()
+	
+	if language.language == 'en':
+		get_parent().get_node(\"VBoxContainer/header/estadisticas_button/HBoxContainer/puntos/Label\").text = \"Score\"
+		get_parent().get_node(\"VBoxContainer/header/estadisticas_button/HBoxContainer/nivel/Label\").text = \"Level\"
+		get_parent().get_node(\"VBoxContainer/CenterContainer/HBoxContainer/Button\").text = \"Objective  \""
+
+[node name="main_menu" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = SubResource( 1 )
+
+[node name="ColorRect" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_pivot_offset = Vector2( -350, 230 )
+color = Color( 0.0823529, 0.12549, 0.168627, 1 )
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 30.0
+margin_top = 30.0
+margin_right = -30.0
+margin_bottom = -30.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="header" type="HBoxContainer" parent="VBoxContainer"]
+margin_right = 420.0
+margin_bottom = 90.0
+grow_horizontal = 2
+grow_vertical = 2
+rect_min_size = Vector2( 0, 90 )
+size_flags_horizontal = 3
+custom_constants/separation = 0
+alignment = 1
+
+[node name="logo_button" type="TextureButton" parent="VBoxContainer/header"]
+margin_right = 210.0
+margin_bottom = 90.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+texture_normal = ExtResource( 1 )
+texture_pressed = ExtResource( 2 )
+expand = true
+stretch_mode = 3
+script = SubResource( 2 )
+
+[node name="particles" type="CPUParticles2D" parent="VBoxContainer/header/logo_button"]
+position = Vector2( 106.109, 46.2527 )
+emitting = false
+amount = 10
+lifetime = 3.0
+local_coords = false
+draw_order = 1
+texture = ExtResource( 3 )
+emission_shape = 1
+emission_sphere_radius = 60.0
+gravity = Vector2( 0, -50 )
+scale_amount_curve = SubResource( 3 )
+
+[node name="estadisticas_button" type="Button" parent="VBoxContainer/header"]
+margin_left = 210.0
+margin_right = 420.0
+margin_bottom = 90.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 4 )
+custom_styles/pressed = SubResource( 5 )
+custom_styles/normal = SubResource( 6 )
+enabled_focus_mode = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/header/estadisticas_button"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = -30.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/separation = 20
+alignment = 1
+
+[node name="puntos" type="VBoxContainer" parent="VBoxContainer/header/estadisticas_button/HBoxContainer"]
+margin_left = 4.0
+margin_right = 84.0
+margin_bottom = 90.0
+rect_min_size = Vector2( 60, 0 )
+custom_constants/separation = 0
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/header/estadisticas_button/HBoxContainer/puntos"]
+margin_right = 80.0
+margin_bottom = 45.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = ExtResource( 4 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Retos"
+
+[node name="valor" type="Label" parent="VBoxContainer/header/estadisticas_button/HBoxContainer/puntos"]
+margin_top = 45.0
+margin_right = 80.0
+margin_bottom = 90.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = ExtResource( 4 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "0"
+
+[node name="nivel" type="VBoxContainer" parent="VBoxContainer/header/estadisticas_button/HBoxContainer"]
+margin_left = 104.0
+margin_right = 175.0
+margin_bottom = 90.0
+rect_min_size = Vector2( 60, 0 )
+custom_constants/separation = 0
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/header/estadisticas_button/HBoxContainer/nivel"]
+margin_right = 71.0
+margin_bottom = 45.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = ExtResource( 4 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Nivel"
+
+[node name="valor" type="Label" parent="VBoxContainer/header/estadisticas_button/HBoxContainer/nivel"]
+margin_top = 45.0
+margin_right = 71.0
+margin_bottom = 90.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = ExtResource( 4 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "0"
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
+margin_top = 94.0
+margin_right = 420.0
+margin_bottom = 124.0
+grow_horizontal = 2
+grow_vertical = 2
+rect_min_size = Vector2( 0, 30 )
+size_flags_horizontal = 3
+
+[node name="tablas" type="GridContainer" parent="VBoxContainer"]
+margin_top = 128.0
+margin_right = 420.0
+margin_bottom = 696.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/vseparation = 10
+custom_constants/hseparation = 10
+
+[node name="6" type="Button" parent="VBoxContainer/tablas"]
+margin_right = 420.0
+margin_bottom = 134.0
+rect_min_size = Vector2( 0, 60 )
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 7 )
+custom_styles/pressed = SubResource( 8 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 10 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_hover = Color( 1, 1, 1, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "A"
+
+[node name="7" type="Button" parent="VBoxContainer/tablas"]
+margin_top = 144.0
+margin_right = 420.0
+margin_bottom = 278.0
+rect_min_size = Vector2( 0, 60 )
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 7 )
+custom_styles/pressed = SubResource( 8 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 10 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_hover = Color( 1, 1, 1, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "B"
+
+[node name="8" type="Button" parent="VBoxContainer/tablas"]
+margin_top = 288.0
+margin_right = 420.0
+margin_bottom = 422.0
+rect_min_size = Vector2( 0, 60 )
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 7 )
+custom_styles/pressed = SubResource( 8 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 10 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_hover = Color( 1, 1, 1, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "C"
+
+[node name="9" type="Button" parent="VBoxContainer/tablas"]
+margin_top = 432.0
+margin_right = 420.0
+margin_bottom = 566.0
+rect_min_size = Vector2( 0, 60 )
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/hover = SubResource( 7 )
+custom_styles/pressed = SubResource( 8 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 10 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_hover = Color( 1, 1, 1, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "D"
+
+[node name="MarginContainer2" type="MarginContainer" parent="VBoxContainer"]
+margin_top = 700.0
+margin_right = 420.0
+margin_bottom = 730.0
+grow_horizontal = 2
+grow_vertical = 2
+rect_min_size = Vector2( 0, 30 )
+size_flags_horizontal = 3
+
+[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer"]
+margin_top = 734.0
+margin_right = 420.0
+margin_bottom = 794.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/CenterContainer"]
+margin_left = 120.0
+margin_right = 299.0
+margin_bottom = 60.0
+custom_constants/separation = 0
+
+[node name="Button" type="Button" parent="VBoxContainer/CenterContainer/HBoxContainer"]
+margin_right = 179.0
+margin_bottom = 60.0
+rect_min_size = Vector2( 0, 60 )
+focus_mode = 0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+custom_styles/hover = ExtResource( 6 )
+custom_styles/pressed = SubResource( 12 )
+custom_styles/normal = ExtResource( 6 )
+custom_fonts/font = SubResource( 13 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_hover = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "Objetivo  "
+icon = ExtResource( 7 )
+
+[node name="transition" type="ColorRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_pivot_offset = Vector2( -350, 230 )
+color = Color( 1, 1, 1, 0 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/init = SubResource( 14 )
+
+[node name="tiempo_de_juego" parent="." instance=ExtResource( 8 )]
+
+[node name="language" type="Node" parent="."]
+script = SubResource( 15 )
+
+[connection signal="resized" from="VBoxContainer/header/logo_button" to="VBoxContainer/header/logo_button" method="_on_logo_button_resized"]
+[connection signal="pressed" from="VBoxContainer/header/estadisticas_button" to="." method="_on_estadisticas_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/tablas/6" to="." method="_on_6_pressed"]
+[connection signal="pressed" from="VBoxContainer/tablas/7" to="." method="_on_7_pressed"]
+[connection signal="pressed" from="VBoxContainer/tablas/8" to="." method="_on_8_pressed"]
+[connection signal="pressed" from="VBoxContainer/tablas/9" to="." method="_on_9_pressed"]
+[connection signal="pressed" from="VBoxContainer/CenterContainer/HBoxContainer/Button" to="." method="_on_Button_pressed"]

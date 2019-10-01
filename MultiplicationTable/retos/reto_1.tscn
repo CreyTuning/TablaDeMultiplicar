@@ -1,0 +1,2183 @@
+[gd_scene load_steps=42 format=2]
+
+[ext_resource path="res://images/less.png" type="Texture" id=1]
+[ext_resource path="res://resources/COMIC.TTF" type="DynamicFontData" id=2]
+[ext_resource path="res://retos/Resources/selected_blue_overlight.tres" type="StyleBox" id=3]
+[ext_resource path="res://retos/Resources/selected_green_overlight.tres" type="StyleBox" id=4]
+[ext_resource path="res://retos/Resources/selected_green.tres" type="StyleBox" id=5]
+[ext_resource path="res://sounds_ogg/[Button Tap].ogg" type="AudioStream" id=6]
+[ext_resource path="res://retos/Resources/selected_blue.tres" type="StyleBox" id=7]
+[ext_resource path="res://sounds_ogg/[Plus].ogg" type="AudioStream" id=8]
+[ext_resource path="res://sounds_ogg/[Victoria].ogg" type="AudioStream" id=9]
+[ext_resource path="res://sounds_ogg/[S-CLOCK_1].ogg" type="AudioStream" id=10]
+[ext_resource path="res://sounds_ogg/[S-CLOCK_2].ogg" type="AudioStream" id=11]
+[ext_resource path="res://sounds_ogg/[ERROR].ogg" type="AudioStream" id=12]
+[ext_resource path="res://resources/pause.tscn" type="PackedScene" id=13]
+[ext_resource path="res://resources/timeingame.tscn" type="PackedScene" id=14]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+
+var savedata : Savedata = Savedata.new()
+var objetivos : Objetivos = Objetivos.new()
+
+var matrix = [[],[],[],[],[],[],[],[],[]]
+
+var x : int = 0
+var y : int = 0
+var result : int = 0
+
+var used = [[0,0]]
+
+func matrix_init() -> void:
+	var count : int = 0
+	
+	var tused = [0]
+	var ttemp = 0
+	
+	# load matrix
+	for y in range(9):
+		for x in range(9):
+			matrix[y].append(get_node(\"Control/VBoxContainer/Control/Matrix/\" + String(count)))
+			count += 1
+	
+	# Update Top values
+	for x in range(1, 9):
+		while ttemp in tused:
+			ttemp = (randi() % 8) + 2
+		
+		matrix[0][x].text = String(ttemp)
+		tused.append(ttemp)
+	
+	# update left values
+	tused.clear()
+	for y in range(1, 9):
+		while ttemp in tused:
+			ttemp = (randi() % 8) + 2
+		
+		matrix[y][0].text = String(ttemp)
+		tused.append(ttemp)
+	
+	# clear zero values
+	for y in range(1,9):
+		for x in range(1,9):
+			matrix[y][x].text = \"\"
+
+func matrix_clear_color() -> void:
+	for y in range(1,9):
+		for x in range(1,9):
+			matrix[y][x].set(\"custom_styles/normal\", preload(\"res://retos/Resources/clear.tres\"))
+			matrix[y][x].set(\"custom_colors/font_color\", Color(\"555555\"))
+
+func fallaste() -> void:
+	$Control/VBoxContainer/resultado.text = \"\"
+	$Control/VBoxContainer/TextureProgress/Timer.stop()
+	$error.play()
+	$AnimationPlayer.play(\"fallaste\")
+	savedata.load_data()
+	savedata.r1[0] += 1
+	savedata.save_data()
+	yield(get_tree().create_timer(4), 'timeout')
+	get_tree().change_scene(\"res://scenes/main_menu_black.tscn\")
+
+func _notification(what):
+	if what == MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST:
+		var animation = preload(\"res://animations/alerta_noSePuedeAbandonar.tscn\").instance()
+		animation.z_index = 500
+		add_child(animation)
+
+func _ready() -> void:
+	$language.apply_language()
+	randomize()
+	matrix_init()
+	update_values()
+
+func _process(delta):
+	if matrix[y][x].text.length() == 0:
+		$Control/VBoxContainer/teclado/ok.disabled = true
+	else:
+		$Control/VBoxContainer/teclado/ok.disabled = false
+ 
+func update_values():
+	print(used.size())
+	if used.size() > 64:
+		$Control/VBoxContainer/TextureProgress/Timer.stop()
+		savedata.load_data()
+		savedata.r1[1] = true
+		savedata.nivel += 1
+		savedata.save_data()
+		objetivos.check_objetivo()
+		
+		#Animation
+		matrix_clear_color()
+		
+		for y in range(1,9):
+			for x in range(1,9):
+				matrix[y][x].set(\"custom_styles/normal\", preload(\"res://retos/Resources/selected_green.tres\"))
+				matrix[y][x].set(\"custom_colors/font_color\", Color(\"FFFFFF\"))
+				
+			$plus.play()
+			for x in range(3):
+				var plus = preload(\"res://animations/Plus.tscn\").instance()
+				plus.position.x = get_viewport_rect().size.x / rand_range(1.5, 3)
+				plus.position.y = get_viewport_rect().size.y / rand_range(1.5, 3)
+				plus.z_index = 500
+				add_child(plus)
+				yield(get_tree().create_timer(0.1), 'timeout')
+			
+			for x in range(1,9):
+				matrix[y][x].set(\"custom_styles/normal\", preload(\"res://retos/Resources/clear.tres\"))
+				matrix[y][x].text = ''
+				
+		$AnimationPlayer.play(\"victoria\")
+		$victoria_sound.play()
+		return
+		
+	var i = 1
+	var j = 1
+	matrix_clear_color()
+	
+	while [x, y] in used:
+		x = (randi() % 8) + 1
+		y = (randi() % 8) + 1
+	
+	used.append([x, y])
+	
+	result = int(matrix[y][0].text) * int(matrix[0][x].text)
+	matrix[y][x].set(\"custom_styles/normal\", preload(\"res://retos/Resources/selected_green.tres\"))
+	matrix[y][x].set(\"custom_colors/font_color\", Color(\"ffffff\"))
+	
+	# Animation fill overlight
+	while i < y or j < x:
+		if not i >= y:
+			matrix[i][x].set(\"custom_styles/normal\", preload(\"res://retos/Resources/selected_blue_overlight.tres\"))
+		
+		if not j >= x:
+			matrix[y][i].set(\"custom_styles/normal\", preload(\"res://retos/Resources/selected_green_overlight.tres\"))
+		
+		yield(get_tree().create_timer(0.1), 'timeout')
+		
+		i += 1
+		j += 1
+
+func _on_TextureProgress_value_changed(value: float) -> void:
+	if value == 0:
+		fallaste()
+
+func _on_teclado_keyboad_pressed(button):
+	
+	$tap.play()
+	
+	if button == \"del\" and matrix[y][x].text.length() > 0:
+		matrix[y][x].text = matrix[y][x].text.substr(0, matrix[y][x].text.length() - 1)
+		
+	elif button != \"ok\" and button != \"del\" and matrix[y][x].text.length() < 2:
+		matrix[y][x].text += button
+		
+	elif button == \"ok\" and matrix[y][x].text.length() > 0:
+		$Control/VBoxContainer/TextureProgress/Timer.stop()
+		
+		if result == int(matrix[y][x].text):
+			$Control/VBoxContainer/TextureProgress.value = $Control/VBoxContainer/TextureProgress.max_value
+			$Control/VBoxContainer/TextureProgress/Timer.start()
+			update_values()
+			#Animation
+			for x in range(3):
+				$plus.play()
+				var plus = preload(\"res://animations/Plus.tscn\").instance()
+				plus.position.x = get_viewport_rect().size.x / rand_range(1.5, 3)
+				plus.position.y = get_viewport_rect().size.y / rand_range(1.5, 3)
+				plus.z_index = 500
+				add_child(plus)
+				yield(get_tree().create_timer(0.1), 'timeout')
+				
+		else:
+			fallaste()
+
+func _on_AnimationPlayer_animation_finished(anim_name):
+	if anim_name == 'victoria':
+		get_tree().change_scene(\"res://scenes/main_menu_black.tscn\")"
+
+[sub_resource type="Curve" id=2]
+_data = [ Vector2( 0, 0.588 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="DynamicFont" id=3]
+size = 30
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxFlat" id=4]
+bg_color = Color( 0.00784314, 0.533333, 0.819608, 1 )
+
+[sub_resource type="StyleBoxFlat" id=5]
+bg_color = Color( 0.219608, 0.556863, 0.235294, 1 )
+
+[sub_resource type="DynamicFont" id=6]
+size = 30
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxFlat" id=7]
+bg_color = Color( 0, 0, 0, 0.0588235 )
+
+[sub_resource type="GDScript" id=8]
+script/source = "extends GridContainer
+
+signal keyboad_pressed(button)
+
+
+func _on_1_pressed():
+	emit_signal(\"keyboad_pressed\", \"1\")
+
+
+func _on_2_pressed():
+	emit_signal(\"keyboad_pressed\", \"2\")
+
+
+func _on_3_pressed():
+	emit_signal(\"keyboad_pressed\", \"3\")
+
+
+func _on_4_pressed():
+	emit_signal(\"keyboad_pressed\", \"4\")
+
+
+func _on_5_pressed():
+	emit_signal(\"keyboad_pressed\", \"5\")
+
+
+func _on_6_pressed():
+	emit_signal(\"keyboad_pressed\", \"6\")
+
+
+func _on_7_pressed():
+	emit_signal(\"keyboad_pressed\", \"7\")
+
+
+func _on_8_pressed():
+	emit_signal(\"keyboad_pressed\", \"8\")
+
+
+func _on_9_pressed():
+	emit_signal(\"keyboad_pressed\", \"9\")
+
+
+func _on_del_pressed():
+	emit_signal(\"keyboad_pressed\", \"del\")
+
+
+func _on_0_pressed():
+	emit_signal(\"keyboad_pressed\", \"0\")
+
+
+func _on_ok_button_down():
+	emit_signal(\"keyboad_pressed\", \"ok\")
+"
+
+[sub_resource type="StyleBoxFlat" id=9]
+bg_color = Color( 1, 1, 1, 0.784314 )
+anti_aliasing = false
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=10]
+bg_color = Color( 0.784314, 0.784314, 0.784314, 1 )
+anti_aliasing_size = 2
+
+[sub_resource type="DynamicFont" id=11]
+size = 30
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxFlat" id=12]
+bg_color = Color( 1, 0.313726, 0.313726, 1 )
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=13]
+bg_color = Color( 0.0901961, 0.627451, 0.364706, 1 )
+anti_aliasing_size = 2
+
+[sub_resource type="Gradient" id=14]
+offsets = PoolRealArray( 1 )
+colors = PoolColorArray( 0.219608, 0.556863, 0.235294, 1 )
+
+[sub_resource type="GradientTexture" id=15]
+gradient = SubResource( 14 )
+
+[sub_resource type="GDScript" id=16]
+script/source = "extends TextureProgress
+
+var switch_clock : bool = false
+
+func _on_Timer_timeout() -> void:
+	value -= 1
+	switch_clock = !switch_clock
+	
+	if switch_clock:
+		$\"../../../clock1\".play()
+	else:
+		$\"../../../clock2\".play()
+
+func _on_AnimationPlayer_animation_finished(anim_name):
+	if anim_name == \"entrada\":
+		$Timer.start()
+"
+
+[sub_resource type="GDScript" id=17]
+script/source = "extends ColorRect
+
+func _input(event):
+	if visible == true:
+		if event is InputEventScreenTouch and event.pressed:
+			get_parent().get_node(\"AnimationPlayer\").stop(false)
+			get_parent().get_node(\"pause\").visible = true
+		elif event is InputEventScreenTouch and not event.pressed:
+			get_parent().get_node(\"AnimationPlayer\").play(\"entrada\")
+			get_parent().get_node(\"pause\").visible = false
+"
+
+[sub_resource type="DynamicFont" id=18]
+size = 50
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxEmpty" id=19]
+
+[sub_resource type="DynamicFont" id=20]
+size = 30
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=21]
+size = 35
+font_data = ExtResource( 2 )
+
+[sub_resource type="Animation" id=22]
+length = 4.0
+tracks/0/type = "value"
+tracks/0/path = NodePath("transition:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1, 3.5, 4 ),
+"transitions": PoolRealArray( 1, 1, 2, 1 ),
+"update": 0,
+"values": [ Color( 0.0823529, 0.12549, 0.168627, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("transition:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 4 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("VBoxContainer:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.8, 1, 3.5, 4 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("VBoxContainer:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 0, 4 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+
+[sub_resource type="Animation" id=23]
+tracks/0/type = "value"
+tracks/0/path = NodePath("fallaste:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ true ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("fallaste:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( -2, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ) ]
+}
+
+[sub_resource type="Animation" id=24]
+length = 0.5
+
+[sub_resource type="Animation" id=25]
+length = 4.0
+tracks/0/type = "value"
+tracks/0/path = NodePath("victoria:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.4 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("victoria:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ true ]
+}
+
+[sub_resource type="GDScript" id=26]
+script/source = "extends AnimationPlayer
+
+func _ready() -> void:
+	play(\"entrada\")
+	pass"
+
+[sub_resource type="GDScript" id=27]
+script/source = "extends Node
+
+var language : Language = Language.new()
+
+func _ready() -> void:
+	language.load_data()
+
+export master func apply_language():
+	language.load_data()
+	
+	if language.language == 'en':
+		get_parent().get_node(\"victoria/Label\").text = \"Successfully\"
+		get_parent().get_node(\"fallaste/Label\").text = \"Failed\""
+
+[node name="Multiplicando" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 6.10352e-005
+script = SubResource( 1 )
+
+[node name="background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="background"]
+modulate = Color( 0, 0, 0, 0.0392157 )
+position = Vector2( -110.76, -200.422 )
+amount = 15
+lifetime = 7.0
+texture = ExtResource( 1 )
+emission_shape = 1
+emission_sphere_radius = 100.0
+initial_velocity = 113.07
+angular_velocity = 50.0
+angular_velocity_random = 1.0
+linear_accel = 10.0
+linear_accel_random = 1.0
+scale_amount_random = 1.0
+scale_amount_curve = SubResource( 2 )
+
+[node name="Control" type="Control" parent="."]
+modulate = Color( 1, 1, 1, 0.941176 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/separation = 0
+
+[node name="Control" type="Control" parent="Control/VBoxContainer"]
+margin_right = 480.0
+margin_bottom = 524.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Matrix" type="GridContainer" parent="Control/VBoxContainer/Control"]
+editor/display_folded = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 30.0
+margin_top = 30.0
+margin_right = -30.0
+margin_bottom = -30.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/vseparation = 0
+custom_constants/hseparation = 0
+columns = 9
+
+[node name="0" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_right = 46.0
+margin_bottom = 51.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+align = 1
+valign = 1
+
+[node name="1" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 46.0
+margin_right = 92.0
+margin_bottom = 51.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 4 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "2"
+align = 1
+valign = 1
+
+[node name="2" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 92.0
+margin_right = 138.0
+margin_bottom = 51.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 4 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "3"
+align = 1
+valign = 1
+
+[node name="3" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 138.0
+margin_right = 184.0
+margin_bottom = 51.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 4 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "4"
+align = 1
+valign = 1
+
+[node name="4" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 184.0
+margin_right = 230.0
+margin_bottom = 51.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 4 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "5"
+align = 1
+valign = 1
+
+[node name="5" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 230.0
+margin_right = 276.0
+margin_bottom = 51.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 4 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "6"
+align = 1
+valign = 1
+
+[node name="6" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 276.0
+margin_right = 322.0
+margin_bottom = 51.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 4 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "7"
+align = 1
+valign = 1
+
+[node name="7" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 322.0
+margin_right = 368.0
+margin_bottom = 51.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 4 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "8"
+align = 1
+valign = 1
+
+[node name="8" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 368.0
+margin_right = 414.0
+margin_bottom = 51.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 4 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "9"
+align = 1
+valign = 1
+
+[node name="9" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_top = 51.0
+margin_right = 46.0
+margin_bottom = 102.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 5 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "2"
+align = 1
+valign = 1
+
+[node name="10" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 46.0
+margin_top = 51.0
+margin_right = 92.0
+margin_bottom = 102.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="11" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 92.0
+margin_top = 51.0
+margin_right = 138.0
+margin_bottom = 102.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="12" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 138.0
+margin_top = 51.0
+margin_right = 184.0
+margin_bottom = 102.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="13" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 184.0
+margin_top = 51.0
+margin_right = 230.0
+margin_bottom = 102.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = ExtResource( 3 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="14" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 230.0
+margin_top = 51.0
+margin_right = 276.0
+margin_bottom = 102.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="15" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 276.0
+margin_top = 51.0
+margin_right = 322.0
+margin_bottom = 102.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="16" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 322.0
+margin_top = 51.0
+margin_right = 368.0
+margin_bottom = 102.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="17" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 368.0
+margin_top = 51.0
+margin_right = 414.0
+margin_bottom = 102.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="18" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_top = 102.0
+margin_right = 46.0
+margin_bottom = 153.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 5 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "3"
+align = 1
+valign = 1
+
+[node name="19" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 46.0
+margin_top = 102.0
+margin_right = 92.0
+margin_bottom = 153.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="20" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 92.0
+margin_top = 102.0
+margin_right = 138.0
+margin_bottom = 153.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="21" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 138.0
+margin_top = 102.0
+margin_right = 184.0
+margin_bottom = 153.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="22" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 184.0
+margin_top = 102.0
+margin_right = 230.0
+margin_bottom = 153.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = ExtResource( 3 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="23" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 230.0
+margin_top = 102.0
+margin_right = 276.0
+margin_bottom = 153.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="24" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 276.0
+margin_top = 102.0
+margin_right = 322.0
+margin_bottom = 153.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="25" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 322.0
+margin_top = 102.0
+margin_right = 368.0
+margin_bottom = 153.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="26" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 368.0
+margin_top = 102.0
+margin_right = 414.0
+margin_bottom = 153.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="27" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_top = 153.0
+margin_right = 46.0
+margin_bottom = 204.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 5 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "4"
+align = 1
+valign = 1
+
+[node name="28" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 46.0
+margin_top = 153.0
+margin_right = 92.0
+margin_bottom = 204.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="29" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 92.0
+margin_top = 153.0
+margin_right = 138.0
+margin_bottom = 204.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="30" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 138.0
+margin_top = 153.0
+margin_right = 184.0
+margin_bottom = 204.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="31" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 184.0
+margin_top = 153.0
+margin_right = 230.0
+margin_bottom = 204.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = ExtResource( 3 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="32" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 230.0
+margin_top = 153.0
+margin_right = 276.0
+margin_bottom = 204.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="33" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 276.0
+margin_top = 153.0
+margin_right = 322.0
+margin_bottom = 204.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="34" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 322.0
+margin_top = 153.0
+margin_right = 368.0
+margin_bottom = 204.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="35" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 368.0
+margin_top = 153.0
+margin_right = 414.0
+margin_bottom = 204.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="36" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_top = 204.0
+margin_right = 46.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 5 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "5"
+align = 1
+valign = 1
+
+[node name="37" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 46.0
+margin_top = 204.0
+margin_right = 92.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="38" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 92.0
+margin_top = 204.0
+margin_right = 138.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="39" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 138.0
+margin_top = 204.0
+margin_right = 184.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="40" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 184.0
+margin_top = 204.0
+margin_right = 230.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = ExtResource( 3 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="41" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 230.0
+margin_top = 204.0
+margin_right = 276.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="42" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 276.0
+margin_top = 204.0
+margin_right = 322.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="43" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 322.0
+margin_top = 204.0
+margin_right = 368.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="44" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 368.0
+margin_top = 204.0
+margin_right = 414.0
+margin_bottom = 255.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="45" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_top = 255.0
+margin_right = 46.0
+margin_bottom = 306.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 5 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "6"
+align = 1
+valign = 1
+
+[node name="46" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 46.0
+margin_top = 255.0
+margin_right = 92.0
+margin_bottom = 306.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="47" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 92.0
+margin_top = 255.0
+margin_right = 138.0
+margin_bottom = 306.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="48" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 138.0
+margin_top = 255.0
+margin_right = 184.0
+margin_bottom = 306.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="49" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 184.0
+margin_top = 255.0
+margin_right = 230.0
+margin_bottom = 306.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = ExtResource( 3 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="50" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 230.0
+margin_top = 255.0
+margin_right = 276.0
+margin_bottom = 306.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="51" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 276.0
+margin_top = 255.0
+margin_right = 322.0
+margin_bottom = 306.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="52" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 322.0
+margin_top = 255.0
+margin_right = 368.0
+margin_bottom = 306.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="53" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 368.0
+margin_top = 255.0
+margin_right = 414.0
+margin_bottom = 306.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="54" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_top = 306.0
+margin_right = 46.0
+margin_bottom = 357.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 5 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "7"
+align = 1
+valign = 1
+
+[node name="55" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 46.0
+margin_top = 306.0
+margin_right = 92.0
+margin_bottom = 357.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = ExtResource( 4 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="56" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 92.0
+margin_top = 306.0
+margin_right = 138.0
+margin_bottom = 357.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = ExtResource( 4 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="57" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 138.0
+margin_top = 306.0
+margin_right = 184.0
+margin_bottom = 357.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = ExtResource( 4 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="58" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 184.0
+margin_top = 306.0
+margin_right = 230.0
+margin_bottom = 357.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = ExtResource( 5 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="59" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 230.0
+margin_top = 306.0
+margin_right = 276.0
+margin_bottom = 357.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="60" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 276.0
+margin_top = 306.0
+margin_right = 322.0
+margin_bottom = 357.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="61" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 322.0
+margin_top = 306.0
+margin_right = 368.0
+margin_bottom = 357.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="62" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 368.0
+margin_top = 306.0
+margin_right = 414.0
+margin_bottom = 357.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="63" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_top = 357.0
+margin_right = 46.0
+margin_bottom = 408.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 5 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "8"
+align = 1
+valign = 1
+
+[node name="64" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 46.0
+margin_top = 357.0
+margin_right = 92.0
+margin_bottom = 408.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="65" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 92.0
+margin_top = 357.0
+margin_right = 138.0
+margin_bottom = 408.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="66" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 138.0
+margin_top = 357.0
+margin_right = 184.0
+margin_bottom = 408.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="67" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 184.0
+margin_top = 357.0
+margin_right = 230.0
+margin_bottom = 408.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="68" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 230.0
+margin_top = 357.0
+margin_right = 276.0
+margin_bottom = 408.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="69" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 276.0
+margin_top = 357.0
+margin_right = 322.0
+margin_bottom = 408.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="70" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 322.0
+margin_top = 357.0
+margin_right = 368.0
+margin_bottom = 408.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="71" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 368.0
+margin_top = 357.0
+margin_right = 414.0
+margin_bottom = 408.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="72" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_top = 408.0
+margin_right = 46.0
+margin_bottom = 459.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/normal = SubResource( 5 )
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "9"
+align = 1
+valign = 1
+
+[node name="73" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 46.0
+margin_top = 408.0
+margin_right = 92.0
+margin_bottom = 459.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="74" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 92.0
+margin_top = 408.0
+margin_right = 138.0
+margin_bottom = 459.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="75" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 138.0
+margin_top = 408.0
+margin_right = 184.0
+margin_bottom = 459.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="76" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 184.0
+margin_top = 408.0
+margin_right = 230.0
+margin_bottom = 459.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="77" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 230.0
+margin_top = 408.0
+margin_right = 276.0
+margin_bottom = 459.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="78" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 276.0
+margin_top = 408.0
+margin_right = 322.0
+margin_bottom = 459.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="79" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 322.0
+margin_top = 408.0
+margin_right = 368.0
+margin_bottom = 459.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="80" type="Label" parent="Control/VBoxContainer/Control/Matrix"]
+margin_left = 368.0
+margin_top = 408.0
+margin_right = 414.0
+margin_bottom = 459.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+text = "0"
+align = 1
+valign = 1
+
+[node name="resultado" type="Label" parent="Control/VBoxContainer"]
+visible = false
+margin_top = 491.0
+margin_right = 480.0
+margin_bottom = 534.0
+custom_fonts/font = SubResource( 6 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+align = 1
+
+[node name="Panel" type="Panel" parent="Control/VBoxContainer/resultado"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_styles/panel = SubResource( 7 )
+
+[node name="teclado" type="GridContainer" parent="Control/VBoxContainer"]
+margin_top = 524.0
+margin_right = 480.0
+margin_bottom = 844.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.0
+custom_constants/vseparation = 0
+custom_constants/hseparation = 0
+columns = 3
+script = SubResource( 8 )
+
+[node name="1" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_right = 160.0
+margin_bottom = 80.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "1"
+
+[node name="2" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 160.0
+margin_right = 320.0
+margin_bottom = 80.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "2"
+
+[node name="3" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 320.0
+margin_right = 480.0
+margin_bottom = 80.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "3"
+
+[node name="4" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_top = 80.0
+margin_right = 160.0
+margin_bottom = 160.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "4"
+
+[node name="5" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 160.0
+margin_top = 80.0
+margin_right = 320.0
+margin_bottom = 160.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "5"
+
+[node name="6" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 320.0
+margin_top = 80.0
+margin_right = 480.0
+margin_bottom = 160.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "6"
+
+[node name="7" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_top = 160.0
+margin_right = 160.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "7"
+
+[node name="8" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 160.0
+margin_top = 160.0
+margin_right = 320.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "8"
+
+[node name="9" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 320.0
+margin_top = 160.0
+margin_right = 480.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "9"
+
+[node name="del" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_top = 240.0
+margin_right = 160.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 12 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 0.588235 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "Del"
+
+[node name="0" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 160.0
+margin_top = 240.0
+margin_right = 320.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "0"
+
+[node name="ok" type="Button" parent="Control/VBoxContainer/teclado"]
+margin_left = 320.0
+margin_top = 240.0
+margin_right = 480.0
+margin_bottom = 320.0
+rect_min_size = Vector2( 0, 80 )
+focus_mode = 0
+size_flags_horizontal = 11
+size_flags_vertical = 11
+size_flags_stretch_ratio = 0.0
+custom_styles/hover = SubResource( 9 )
+custom_styles/pressed = SubResource( 13 )
+custom_styles/disabled = SubResource( 9 )
+custom_styles/normal = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color_disabled = Color( 0.333333, 0.333333, 0.333333, 0.588235 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_hover = Color( 0.333333, 0.333333, 0.333333, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+custom_constants/hseparation = 0
+enabled_focus_mode = 0
+text = "Ok"
+
+[node name="tap_sound" type="AudioStreamPlayer" parent="Control/VBoxContainer/teclado"]
+stream = ExtResource( 6 )
+volume_db = -15.0
+
+[node name="TextureProgress" type="TextureProgress" parent="Control/VBoxContainer"]
+margin_top = 844.0
+margin_right = 480.0
+margin_bottom = 854.0
+rect_min_size = Vector2( 0, 10 )
+size_flags_horizontal = 3
+max_value = 3.0
+value = 3.0
+texture_progress = SubResource( 15 )
+nine_patch_stretch = true
+script = SubResource( 16 )
+
+[node name="Timer" type="Timer" parent="Control/VBoxContainer/TextureProgress"]
+
+[node name="transition" type="ColorRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0.0823529, 0.12549, 0.168627, 1 )
+script = SubResource( 17 )
+
+[node name="fallaste" type="Control" parent="."]
+visible = false
+modulate = Color( 1, 1, 1, 0 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="transition2" type="ColorRect" parent="fallaste"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 1, 0.313726, 0.313726, 1 )
+
+[node name="Label" type="Label" parent="fallaste"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_fonts/font = SubResource( 18 )
+text = "Fallaste"
+align = 1
+valign = 1
+
+[node name="victoria" type="Control" parent="."]
+visible = false
+modulate = Color( 1, 1, 1, 0 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="transition2" type="ColorRect" parent="victoria"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0.0901961, 0.627451, 0.364706, 1 )
+
+[node name="Label" type="Label" parent="victoria"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_fonts/font = SubResource( 18 )
+text = "Victoria"
+align = 1
+valign = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+visible = false
+modulate = Color( 1, 1, 1, 0 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+margin_top = 255.0
+margin_right = 480.0
+margin_bottom = 305.0
+rect_min_size = Vector2( 0, 50 )
+custom_styles/separator = SubResource( 19 )
+
+[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer"]
+editor/display_folded = true
+margin_top = 309.0
+margin_right = 480.0
+margin_bottom = 521.0
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer/CenterContainer"]
+margin_left = 240.0
+margin_top = 106.0
+margin_right = 240.0
+margin_bottom = 106.0
+columns = 4
+
+[node name="Label" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_right = 50.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+
+[node name="Label6" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 54.0
+margin_right = 104.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+custom_styles/normal = ExtResource( 7 )
+
+[node name="Label11" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 108.0
+margin_right = 158.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+custom_styles/normal = ExtResource( 7 )
+
+[node name="Label13" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 162.0
+margin_right = 212.0
+margin_bottom = 50.0
+rect_min_size = Vector2( 50, 50 )
+custom_styles/normal = ExtResource( 7 )
+custom_fonts/font = SubResource( 20 )
+text = "B"
+align = 1
+valign = 1
+
+[node name="Label17" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_top = 54.0
+margin_right = 50.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+custom_styles/normal = ExtResource( 5 )
+
+[node name="Label2" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 54.0
+margin_top = 54.0
+margin_right = 104.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+
+[node name="Label8" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 108.0
+margin_top = 54.0
+margin_right = 158.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+
+[node name="Label9" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 162.0
+margin_top = 54.0
+margin_right = 212.0
+margin_bottom = 104.0
+rect_min_size = Vector2( 50, 50 )
+custom_styles/normal = ExtResource( 3 )
+
+[node name="Label15" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_top = 108.0
+margin_right = 50.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+custom_styles/normal = ExtResource( 5 )
+
+[node name="Label19" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 54.0
+margin_top = 108.0
+margin_right = 104.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+
+[node name="Label3" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 108.0
+margin_top = 108.0
+margin_right = 158.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+
+[node name="Label7" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 162.0
+margin_top = 108.0
+margin_right = 212.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 50, 50 )
+custom_styles/normal = ExtResource( 3 )
+
+[node name="Label10" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_top = 162.0
+margin_right = 50.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+custom_styles/normal = ExtResource( 5 )
+custom_fonts/font = SubResource( 20 )
+text = "A"
+align = 1
+valign = 1
+
+[node name="Label16" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 54.0
+margin_top = 162.0
+margin_right = 104.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+custom_styles/normal = ExtResource( 4 )
+
+[node name="Label20" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 108.0
+margin_top = 162.0
+margin_right = 158.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+custom_styles/normal = ExtResource( 4 )
+
+[node name="Label4" type="Label" parent="VBoxContainer/CenterContainer/GridContainer"]
+margin_left = 162.0
+margin_top = 162.0
+margin_right = 212.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 50, 50 )
+custom_styles/normal = ExtResource( 5 )
+custom_fonts/font = SubResource( 20 )
+text = "C"
+align = 1
+valign = 1
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
+margin_top = 525.0
+margin_right = 480.0
+margin_bottom = 545.0
+rect_min_size = Vector2( 0, 20 )
+custom_styles/separator = SubResource( 19 )
+
+[node name="TituloEntrada2" type="Label" parent="VBoxContainer"]
+margin_top = 549.0
+margin_right = 480.0
+margin_bottom = 599.0
+custom_fonts/font = SubResource( 21 )
+custom_colors/font_color = Color( 0.360784, 0.372549, 0.423529, 1 )
+text = "C = A x B"
+align = 1
+valign = 1
+autowrap = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/entrada = SubResource( 22 )
+anims/fallaste = SubResource( 23 )
+anims/salida = SubResource( 24 )
+anims/victoria = SubResource( 25 )
+script = SubResource( 26 )
+
+[node name="plus" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 8 )
+volume_db = -10.0
+bus = "Plus"
+
+[node name="victoria_sound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 9 )
+volume_db = -10.0
+bus = "Error"
+
+[node name="clock1" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 10 )
+volume_db = -10.0
+
+[node name="clock2" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 11 )
+volume_db = -10.0
+
+[node name="error" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 12 )
+volume_db = -15.0
+bus = "Error"
+
+[node name="pause" parent="." instance=ExtResource( 13 )]
+modulate = Color( 0.333333, 0.333333, 0.333333, 1 )
+
+[node name="timeingame" parent="." instance=ExtResource( 14 )]
+
+[node name="language" type="Node" parent="."]
+script = SubResource( 27 )
+
+[node name="tap" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 6 )
+volume_db = -15.0
+
+[connection signal="keyboad_pressed" from="Control/VBoxContainer/teclado" to="." method="_on_teclado_keyboad_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/1" to="Control/VBoxContainer/teclado" method="_on_1_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/2" to="Control/VBoxContainer/teclado" method="_on_2_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/3" to="Control/VBoxContainer/teclado" method="_on_3_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/4" to="Control/VBoxContainer/teclado" method="_on_4_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/5" to="Control/VBoxContainer/teclado" method="_on_5_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/6" to="Control/VBoxContainer/teclado" method="_on_6_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/7" to="Control/VBoxContainer/teclado" method="_on_7_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/8" to="Control/VBoxContainer/teclado" method="_on_8_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/9" to="Control/VBoxContainer/teclado" method="_on_9_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/del" to="Control/VBoxContainer/teclado" method="_on_del_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/teclado/0" to="Control/VBoxContainer/teclado" method="_on_0_pressed"]
+[connection signal="button_down" from="Control/VBoxContainer/teclado/ok" to="Control/VBoxContainer/teclado" method="_on_ok_button_down"]
+[connection signal="value_changed" from="Control/VBoxContainer/TextureProgress" to="." method="_on_TextureProgress_value_changed"]
+[connection signal="timeout" from="Control/VBoxContainer/TextureProgress/Timer" to="Control/VBoxContainer/TextureProgress" method="_on_Timer_timeout"]
+[connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_finished"]
+[connection signal="animation_finished" from="AnimationPlayer" to="Control/VBoxContainer/TextureProgress" method="_on_AnimationPlayer_animation_finished"]

@@ -1,0 +1,39 @@
+[gd_scene load_steps=3 format=2]
+
+[sub_resource type="Animation" id=2]
+resource_name = "Colores"
+length = 10.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("ColorRect:color")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 0.717647, 0.109804, 0.109804, 1 ), Color( 0.533333, 0.054902, 0.309804, 1 ), Color( 0.290196, 0.0784314, 0.54902, 1 ), Color( 0.192157, 0.105882, 0.572549, 1 ), Color( 0.101961, 0.137255, 0.494118, 1 ), Color( 0.0509804, 0.278431, 0.631373, 1 ), Color( 0, 0.376471, 0.392157, 1 ), Color( 0, 0.376471, 0.392157, 1 ), Color( 0, 0.301961, 0.25098, 1 ), Color( 0.105882, 0.368627, 0.12549, 1 ), Color( 0.717647, 0.109804, 0.109804, 1 ) ]
+}
+
+[sub_resource type="GDScript" id=3]
+script/source = "extends AnimationPlayer
+
+func _ready() -> void:
+	play(\"Colores\")"
+
+[node name="Panel" type="Panel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="ColorRect" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0.717647, 0.109804, 0.109804, 1 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+playback_speed = 0.5
+anims/Colores = SubResource( 2 )
+script = SubResource( 3 )
+

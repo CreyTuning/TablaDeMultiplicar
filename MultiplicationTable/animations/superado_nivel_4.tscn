@@ -1,0 +1,218 @@
+[gd_scene load_steps=18 format=2]
+
+[ext_resource path="res://images/plus_white.png" type="Texture" id=1]
+[ext_resource path="res://resources/COMIC.TTF" type="DynamicFontData" id=2]
+[ext_resource path="res://sounds_ogg/[NIVEL_4_SUPERADO].ogg" type="AudioStream" id=3]
+[ext_resource path="res://resources/timeingame.tscn" type="PackedScene" id=4]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+
+func _ready():
+	$language.apply_language()
+
+func _on_Button_pressed():
+	get_tree().change_scene(\"res://scenes/main_menu_black.tscn\")
+"
+
+[sub_resource type="StyleBoxFlat" id=2]
+bg_color = Color( 0.145098, 0.678431, 0.533333, 1 )
+
+[sub_resource type="Curve" id=3]
+_data = [ Vector2( 0, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.0803023, 0.4472 ), 0.0, 0.0, 0, 0, Vector2( 0.501742, 0.3504 ), 1.98517, 1.98517, 0, 0, Vector2( 0.867453, 0.3768 ), 1.74917, 1.74917, 0, 0, Vector2( 1, 0 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="DynamicFont" id=4]
+size = 50
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxFlat" id=5]
+bg_color = Color( 1, 1, 1, 1 )
+
+[sub_resource type="DynamicFont" id=6]
+size = 25
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxFlat" id=7]
+bg_color = Color( 0.145098, 0.678431, 0.533333, 1 )
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+anti_aliasing_size = 2
+
+[sub_resource type="StyleBoxFlat" id=8]
+bg_color = Color( 0.117647, 0.533333, 0.419608, 1 )
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+anti_aliasing_size = 2
+
+[sub_resource type="DynamicFont" id=9]
+size = 25
+font_data = ExtResource( 2 )
+
+[sub_resource type="Animation" id=10]
+resource_name = "init"
+tracks/0/type = "value"
+tracks/0/path = NodePath("ColorRect:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( -2, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("ColorRect:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+
+[sub_resource type="GDScript" id=11]
+script/source = "extends AnimationPlayer
+
+func _ready():
+	play(\"init\")"
+
+[sub_resource type="GDScript" id=12]
+script/source = "extends AudioStreamPlayer
+
+func _ready():
+	yield(get_tree().create_timer(0.2), 'timeout')
+	play()
+"
+
+[sub_resource type="GDScript" id=13]
+script/source = "extends Node
+
+var language : Language = Language.new()
+
+func _ready() -> void:
+	language.load_data()
+
+export master func apply_language():
+	language.load_data()
+	
+	if language.language == 'en':
+		get_parent().get_node(\"VBoxContainer/top/Label\").text = \"Level 4\\ncompleted!\"
+		get_parent().get_node(\"VBoxContainer/bottom/Label2\").text = 'Welcome to the final stage\\n\"Four challenges of the thinker\"'
+		get_parent().get_node(\"VBoxContainer/bottom/Label2/Button\").text = 'Continue'"
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource( 1 )
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_constants/separation = 0
+
+[node name="top" type="Panel" parent="VBoxContainer"]
+margin_right = 480.0
+margin_bottom = 427.0
+size_flags_vertical = 3
+custom_styles/panel = SubResource( 2 )
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="VBoxContainer/top"]
+modulate = Color( 1, 1, 1, 0.0784314 )
+amount = 5
+lifetime = 4.0
+texture = ExtResource( 1 )
+emission_shape = 1
+emission_sphere_radius = 128.0
+initial_velocity = 120.0
+scale_amount_curve = SubResource( 3 )
+
+[node name="Label" type="Label" parent="VBoxContainer/top"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_fonts/font = SubResource( 4 )
+text = "NIVEL 4
+SUPERADO!"
+align = 1
+valign = 1
+
+[node name="bottom" type="Panel" parent="VBoxContainer"]
+margin_top = 427.0
+margin_right = 480.0
+margin_bottom = 854.0
+size_flags_vertical = 3
+custom_styles/panel = SubResource( 5 )
+
+[node name="CPUParticles2D2" type="CPUParticles2D" parent="VBoxContainer/bottom"]
+modulate = Color( 0.145098, 0.678431, 0.533333, 0.0980392 )
+position = Vector2( 2.92203, 2.53766 )
+amount = 5
+lifetime = 4.0
+texture = ExtResource( 1 )
+emission_shape = 1
+emission_sphere_radius = 128.0
+initial_velocity = 120.0
+scale_amount_curve = SubResource( 3 )
+
+[node name="Label2" type="Label" parent="VBoxContainer/bottom"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 6
+custom_fonts/font = SubResource( 6 )
+custom_colors/font_color = Color( 0.333333, 0.333333, 0.333333, 0.901961 )
+custom_constants/line_spacing = 5
+text = "Bienvenido a la etapa final:
+\"Cuatro retos del pensante\""
+align = 1
+valign = 1
+autowrap = true
+
+[node name="Button" type="Button" parent="VBoxContainer/bottom/Label2"]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -100.0
+margin_top = -60.0
+margin_right = 100.0
+rect_min_size = Vector2( 200, 60 )
+focus_mode = 0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+custom_styles/hover = SubResource( 7 )
+custom_styles/pressed = SubResource( 8 )
+custom_styles/normal = SubResource( 7 )
+custom_fonts/font = SubResource( 9 )
+custom_colors/font_color_disabled = Color( 1, 1, 1, 1 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_hover = Color( 1, 1, 1, 1 )
+custom_colors/font_color_pressed = Color( 1, 1, 1, 1 )
+enabled_focus_mode = 0
+text = "Continuar"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/init = SubResource( 10 )
+script = SubResource( 11 )
+
+[node name="ColorRect" type="ColorRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 1, 1, 1, 0 )
+
+[node name="intro" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 3 )
+volume_db = -10.0
+script = SubResource( 12 )
+
+[node name="timeingame" parent="." instance=ExtResource( 4 )]
+
+[node name="language" type="Node" parent="."]
+script = SubResource( 13 )
+
+[connection signal="pressed" from="VBoxContainer/bottom/Label2/Button" to="." method="_on_Button_pressed"]

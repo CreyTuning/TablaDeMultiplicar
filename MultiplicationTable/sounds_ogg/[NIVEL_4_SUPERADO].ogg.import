@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/[NIVEL_4_SUPERADO].ogg-7f9874ac5c06f56ca391daddb8633d20.oggstr"
+
+[deps]
+
+source_file="res://sounds_ogg/[NIVEL_4_SUPERADO].ogg"
+dest_files=[ "res://.import/[NIVEL_4_SUPERADO].ogg-7f9874ac5c06f56ca391daddb8633d20.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0
