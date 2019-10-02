@@ -12,12 +12,21 @@ Designed for the youngest of the house in its early stages of education and **co
 
 
 # Simple and intuitive
-
+Main menu
 
 ![Main menu](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Resources/Tabla%20Screenshots/English/Godot_v3%2019-06-11%2015-12-53-307.png)
 
+# Progress Details
+Status Menu
+
 ![Status menu](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Resources/Tabla%20Screenshots/English/Godot_v3%2019-06-11%2015-15-23-176.png)
 
+# Basic multiplication
+Multiplication
+
 ![Multiplication](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Resources/Tabla%20Screenshots/English/Godot_v3%2019-06-11%2015-17-02-22.png)
+
+# Multiple objetives
+Objetive menu
 
 ![Objetive menu](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Resources/Tabla%20Screenshots/English/Godot_v3%2019-06-11%2015-17-09-353.png)
