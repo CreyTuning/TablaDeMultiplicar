@@ -1,21 +1,23 @@
-# TablaDeMultiplicar
+# Multiplication Table!
 
-Aplicacion para practicar la tabla de multiplicar
+You will develop your **math skills**, attention, concentration and speed of brain response.  
+  
+More than a simple app or game, **it is a challenge** for those who believe they can overcome it.  
+  
+1. Basic multiplication  
+2. Multiplication with exponents  
+3. Addition, subtraction and much more ...  
+  
+Designed for the youngest of the house in its early stages of education and **competitive enough for any educational level.**
 
-- Contador de puntos
-- Contador de tablas terminadas correctamente
-- Boton de ayuda
 
-## Simple de usar
-![alt text](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Images/IMG1.PNG)
+# Simple and intuitive
 
-## Barra de progreso
-![alt text](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Images/IMG2.PNG)
 
-## Contador de Niveles
-![alt text](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Images/IMG3.PNG)
+![Main menu](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Resources/Tabla%20Screenshots/English/Godot_v3%2019-06-11%2015-12-53-307.png)
 
-## Boton de ayuda
-![alt text](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Images/IMG4.PNG)
+![Status menu](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Resources/Tabla%20Screenshots/English/Godot_v3%2019-06-11%2015-15-23-176.png)
 
-Download:  https://github.com/CreyTuning/TablaDeMultiplicar/releases
+![Multiplication](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Resources/Tabla%20Screenshots/English/Godot_v3%2019-06-11%2015-17-02-22.png)
+
+![Objetive menu](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Resources/Tabla%20Screenshots/English/Godot_v3%2019-06-11%2015-17-09-353.png)
