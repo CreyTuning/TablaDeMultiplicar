@@ -32,4 +32,4 @@ Objetive menu
 ![Objetive menu](https://github.com/CreyTuning/TablaDeMultiplicar/blob/master/Resources/Tabla%20Screenshots/English/Godot_v3%2019-06-11%2015-17-09-353.png)
 
 # Multiple objetives
-Android Dowload: [Play Store](https://play.google.com/store/apps/details?id=creytuning.tablademultiplicar)
+Android Dowload: [Google Play](https://play.google.com/store/apps/details?id=creytuning.tablademultiplicar)
